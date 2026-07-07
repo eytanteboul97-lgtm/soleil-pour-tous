@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-paper text-ink font-body antialiased;
+  }
+
+  ::selection {
+    @apply bg-sun-400/30 text-ink;
+  }
+}
+
+@layer components {
+  /* Glassmorphism card used across the hero, floating cards and simulator */
+  .glass {
+    @apply relative border border-white/15 bg-white/10 backdrop-blur-xl;
+  }
+
+  .glass-light {
+    @apply relative border border-white/60 bg-white/70 backdrop-blur-xl;
+  }
+
+  /* Gradient text for headline emphasis */
+  .text-gradient-sun {
+    @apply bg-gradient-to-r from-sun-400 via-sun-500 to-sun-600 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-volt {
+    @apply bg-gradient-to-r from-volt-300 via-volt-400 to-volt-600 bg-clip-text text-transparent;
+  }
+
+  .shimmer-bg {
+    background-size: 200% 100%;
+    @apply animate-shimmer bg-gradient-to-r from-transparent via-white/40 to-transparent;
+  }
+
+  /* Section anchor offset so the sticky navbar never covers a target */
+  .anchor-offset {
+    scroll-margin-top: 5.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
