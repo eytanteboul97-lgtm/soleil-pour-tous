@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HeroVisual } from "@/components/hero-visual";
+import { ParallaxTilt } from "@/components/parallax-tilt";
 
 function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -13,6 +14,16 @@ export function Hero() {
   return (
     <section id="hero" className="relative overflow-hidden bg-night pb-24 pt-32 sm:pb-32 sm:pt-40">
       <div className="pointer-events-none absolute inset-0 bg-mesh-night" />
+      <motion.div
+        className="pointer-events-none absolute -left-1/4 top-0 h-[600px] w-[600px] rounded-full bg-sun-radial opacity-[0.07] blur-3xl"
+        animate={{ x: [0, 40, 0], y: [0, 30, 0] }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="pointer-events-none absolute -right-1/4 bottom-0 h-[500px] w-[500px] rounded-full bg-volt-500/10 blur-3xl"
+        animate={{ x: [0, -30, 0], y: [0, -40, 0] }}
+        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+      />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_0%,rgba(6,11,23,0.4)_70%,#F7F8FC_100%)]" />
 
       <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-5 sm:px-8 lg:grid-cols-2 lg:gap-8">
@@ -64,7 +75,9 @@ export function Hero() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.15 }}
         >
-          <HeroVisual />
+          <ParallaxTilt intensity={6}>
+            <HeroVisual />
+          </ParallaxTilt>
         </motion.div>
       </div>
     </section>

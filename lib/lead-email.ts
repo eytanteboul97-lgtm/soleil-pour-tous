@@ -1,15 +1,11 @@
 import type { LeadFormValues } from "@/lib/lead-schema";
-
-const TYPE_LOGEMENT_LABELS: Record<LeadFormValues["typeLogement"], string> = {
-  maison: "Maison",
-  appartement: "Appartement",
-  autre: "Autre",
-};
-
-const STATUT_LABELS: Record<LeadFormValues["statutOccupation"], string> = {
-  proprietaire: "Propriétaire",
-  locataire: "Locataire",
-};
+import {
+  NOMBRE_PERSONNES_LABELS,
+  ORIENTATION_LABELS,
+  STATUT_LABELS,
+  TYPE_CHAUFFAGE_LABELS,
+  TYPE_LOGEMENT_LABELS,
+} from "@/lib/lead-schema";
 
 function row(label: string, value: string) {
   return `
@@ -50,7 +46,10 @@ export function buildLeadEmailHtml(lead: LeadFormValues, receivedAt: Date) {
         ${row("Ville", lead.ville)}
         ${row("Type de logement", TYPE_LOGEMENT_LABELS[lead.typeLogement])}
         ${row("Statut", STATUT_LABELS[lead.statutOccupation])}
+        ${row("Personnes au foyer", NOMBRE_PERSONNES_LABELS[lead.nombrePersonnes])}
+        ${row("Chauffage", TYPE_CHAUFFAGE_LABELS[lead.typeChauffage])}
         ${row("Surface de toiture", `${lead.surfaceToiture} m²`)}
+        ${row("Orientation du toit", ORIENTATION_LABELS[lead.orientationToit])}
         ${row("Facture mensuelle", `${lead.factureMensuelle} €`)}
         ${row("Revenu fiscal de référence", `${lead.revenuFiscal} €`)}
         ${row("Consentement RGPD", "Oui, recueilli à la soumission du formulaire")}

@@ -15,11 +15,25 @@ const NORTH_DEPARTMENTS = new Set([
   "02", "08", "14", "27", "28", "29", "50", "54", "55", "57", "59", "60", "61", "62", "67", "68", "76", "80",
 ]);
 
-function regionalYieldMultiplier(codePostal: string) {
+const ORIENTATION_MULTIPLIER: Record<string, number> = {
+  sud: 1,
+  "est-ouest": 0.87,
+  nord: 0.6,
+  inconnue: 0.87,
+};
+
+export function regionalYieldMultiplier(codePostal: string) {
   const dept = codePostal.slice(0, 2);
   if (SOUTH_DEPARTMENTS.has(dept)) return 1.15;
   if (NORTH_DEPARTMENTS.has(dept)) return 0.9;
   return 1;
+}
+
+export function regionLabel(codePostal: string): "sud" | "nord" | "centre" {
+  const dept = codePostal.slice(0, 2);
+  if (SOUTH_DEPARTMENTS.has(dept)) return "sud";
+  if (NORTH_DEPARTMENTS.has(dept)) return "nord";
+  return "centre";
 }
 
 export type SimulatorInput = {
@@ -27,6 +41,7 @@ export type SimulatorInput = {
   codePostal: string;
   roofSurface: number;
   taxIncome: number;
+  orientation?: "sud" | "est-ouest" | "nord" | "inconnue";
 };
 
 export type SimulatorResult = {
@@ -42,11 +57,14 @@ export function computeSimulation({
   codePostal,
   roofSurface,
   taxIncome,
+  orientation = "inconnue",
 }: SimulatorInput): SimulatorResult {
-  const multiplier = regionalYieldMultiplier(codePostal);
+  const regionMultiplier = regionalYieldMultiplier(codePostal);
+  const orientationMultiplier = ORIENTATION_MULTIPLIER[orientation] ?? 0.87;
 
   const installableKwc = clamp(roofSurface / M2_PER_KWC, 1.5, 9);
-  const estimatedProductionKwh = installableKwc * YIELD_PER_KWC * multiplier;
+  const estimatedProductionKwh =
+    installableKwc * YIELD_PER_KWC * regionMultiplier * orientationMultiplier;
 
   const annualBill = monthlyBill * 12;
   const consumptionKwh = annualBill / PRICE_PER_KWH;
