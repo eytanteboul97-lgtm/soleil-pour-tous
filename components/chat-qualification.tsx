@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChoiceButtons } from "@/components/choice-buttons";
+import { MultiChoiceButtons } from "@/components/multi-choice-buttons";
 import { AdvisorBubble, UserBubble, TypingIndicator } from "@/components/chat-bubble";
 import { LiveEstimatePanel, type LiveEstimate } from "@/components/live-estimate-panel";
 import { AnalyzingSequence } from "@/components/analyzing-sequence";
@@ -18,14 +19,18 @@ import { computeSimulation, regionLabel } from "@/lib/simulator";
 import {
   leadFormSchema,
   type LeadFormValues,
+  DISPONIBILITE_LABELS,
   NOMBRE_PERSONNES_LABELS,
   ORIENTATION_LABELS,
   STATUT_LABELS,
   TYPE_CHAUFFAGE_LABELS,
   TYPE_LOGEMENT_LABELS,
+  TYPE_TRAVAUX_LABELS,
+  TYPE_TRAVAUX_VALUES,
 } from "@/lib/lead-schema";
 
 type ScreenId =
+  | "travaux"
   | "identity"
   | "contact"
   | "address"
@@ -36,23 +41,11 @@ type ScreenId =
   | "chauffage"
   | "toiture"
   | "revenu"
+  | "disponibilite"
   | "consent";
 
-const SCREEN_ORDER: ScreenId[] = [
-  "identity",
-  "contact",
-  "address",
-  "statut",
-  "logement",
-  "personnes",
-  "facture",
-  "chauffage",
-  "toiture",
-  "revenu",
-  "consent",
-];
-
 const FIELDS_BY_SCREEN: Record<ScreenId, (keyof LeadFormValues)[]> = {
+  travaux: ["typeTravaux"],
   identity: ["prenom", "nom"],
   contact: ["email", "telephone"],
   address: ["adresse", "codePostal", "ville"],
@@ -63,17 +56,20 @@ const FIELDS_BY_SCREEN: Record<ScreenId, (keyof LeadFormValues)[]> = {
   chauffage: ["typeChauffage"],
   toiture: ["surfaceToiture", "orientationToit"],
   revenu: ["revenuFiscal"],
+  disponibilite: ["disponibiliteRappel"],
   consent: ["consentement"],
 };
 
 function assistantMessage(screen: ScreenId, v: Partial<LeadFormValues>): string {
   switch (screen) {
+    case "travaux":
+      return "Bonjour, je suis ravi de vous accompagner. Sur quel(s) type(s) de travaux souhaitez-vous être conseillé(e) ?";
     case "identity":
-      return "Bonjour, je suis ravi de vous accompagner dans votre projet solaire. Pour commencer, comment vous appelez-vous ?";
+      return "Parfait. Pour préparer votre dossier, comment vous appelez-vous ?";
     case "contact":
       return `Merci${v.prenom ? " " + v.prenom : ""}. Sur quelle adresse email et quel numéro de téléphone puis-je vous recontacter ?`;
     case "address":
-      return "Quelle est l'adresse du logement à équiper ?";
+      return "Quelle est l'adresse du logement concerné par les travaux ?";
     case "statut":
       return "Êtes-vous propriétaire ou locataire de ce logement ?";
     case "logement":
@@ -85,9 +81,11 @@ function assistantMessage(screen: ScreenId, v: Partial<LeadFormValues>): string 
     case "chauffage":
       return "Quel type de chauffage utilisez-vous actuellement ?";
     case "toiture":
-      return "Parlons de votre toiture : quelle est sa surface approximative, et son orientation principale ?";
+      return "Parlons de votre toiture pour le projet photovoltaïque : quelle est sa surface approximative, et son orientation principale ?";
     case "revenu":
-      return "Dernière question technique : quel est votre revenu fiscal de référence ? Cette information sert uniquement à vérifier votre éligibilité aux aides.";
+      return "Quel est votre revenu fiscal de référence ? Cette information sert uniquement à vérifier votre éligibilité aux aides.";
+    case "disponibilite":
+      return "Dernière question : quelle est votre disponibilité pour être rappelé(e) par un conseiller ?";
     case "consent":
       return "Parfait, j'ai tout ce qu'il me faut pour préparer votre estimation. Une dernière chose avant de lancer l'analyse :";
   }
@@ -95,6 +93,8 @@ function assistantMessage(screen: ScreenId, v: Partial<LeadFormValues>): string 
 
 function userSummary(screen: ScreenId, v: Partial<LeadFormValues>): string {
   switch (screen) {
+    case "travaux":
+      return (v.typeTravaux ?? []).map((t) => TYPE_TRAVAUX_LABELS[t]).join(", ");
     case "identity":
       return `${v.prenom ?? ""} ${v.nom ?? ""}`.trim();
     case "contact":
@@ -115,8 +115,10 @@ function userSummary(screen: ScreenId, v: Partial<LeadFormValues>): string {
       return `${v.surfaceToiture ?? ""} m² · ${v.orientationToit ? ORIENTATION_LABELS[v.orientationToit] : ""}`;
     case "revenu":
       return `${v.revenuFiscal ?? ""} €`;
+    case "disponibilite":
+      return v.disponibiliteRappel ? DISPONIBILITE_LABELS[v.disponibiliteRappel] : "";
     case "consent":
-      return "J'accepte d'être recontacté(e) par Soleil Pour Tous";
+      return "J'accepte d'être recontacté(e)";
   }
 }
 
@@ -142,6 +144,7 @@ export function ChatQualification() {
     resolver: zodResolver(leadFormSchema),
     mode: "onTouched",
     defaultValues: {
+      typeTravaux: [],
       prenom: "",
       nom: "",
       email: "",
@@ -157,12 +160,44 @@ export function ChatQualification() {
   });
 
   const values = watch();
+  const wantsPhotovoltaique = (values.typeTravaux ?? []).includes("photovoltaique");
+
+  useEffect(() => {
+    function handlePreselect(e: Event) {
+      const key = (e as CustomEvent<LeadFormValues["typeTravaux"][number]>).detail;
+      const current = getValues("typeTravaux") ?? [];
+      if (!current.includes(key)) {
+        setValue("typeTravaux", [...current, key], { shouldValidate: true });
+      }
+    }
+    window.addEventListener("soleil:select-travaux", handlePreselect);
+    return () => window.removeEventListener("soleil:select-travaux", handlePreselect);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const screenOrder = useMemo<ScreenId[]>(() => {
+    const order: ScreenId[] = [
+      "travaux",
+      "identity",
+      "contact",
+      "address",
+      "statut",
+      "logement",
+      "personnes",
+      "facture",
+      "chauffage",
+    ];
+    if (wantsPhotovoltaique) order.push("toiture");
+    order.push("revenu", "disponibilite", "consent");
+    return order;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wantsPhotovoltaique]);
 
   useEffect(() => {
     if (!showTyping) return;
     const idx = completed.length;
     const timeout = setTimeout(() => {
-      if (idx >= SCREEN_ORDER.length) {
+      if (idx >= screenOrder.length) {
         setPhase("analyzing");
         const finalValues = getValues();
         pendingSubmit.current = (async () => {
@@ -178,13 +213,13 @@ export function ChatQualification() {
           }
         })();
       } else {
-        setCurrentScreen(SCREEN_ORDER[idx]);
+        setCurrentScreen(screenOrder[idx]);
         setShowTyping(false);
       }
     }, TYPING_DELAY);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showTyping, completed]);
+  }, [showTyping, completed, screenOrder]);
 
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -209,6 +244,14 @@ export function ChatQualification() {
     setTimeout(() => goNext(screen), 250);
   }
 
+  function toggleTravaux(value: LeadFormValues["typeTravaux"][number]) {
+    const current = values.typeTravaux ?? [];
+    const next = current.includes(value)
+      ? current.filter((v) => v !== value)
+      : [...current, value];
+    setValue("typeTravaux", next, { shouldValidate: true });
+  }
+
   async function handleAnalyzingComplete() {
     if (pendingSubmit.current) await pendingSubmit.current;
     setPhase("result");
@@ -218,6 +261,7 @@ export function ChatQualification() {
     const cp = values.codePostal;
     const hasRegion = cp && /^\d{5}$/.test(cp);
     const hasSim =
+      wantsPhotovoltaique &&
       hasRegion &&
       Number(values.surfaceToiture) > 0 &&
       Number(values.factureMensuelle) > 0;
@@ -241,6 +285,7 @@ export function ChatQualification() {
       eligibilityLabel: values.revenuFiscal ? sim.eligibilityLabel : undefined,
     };
   }, [
+    wantsPhotovoltaique,
     values.codePostal,
     values.surfaceToiture,
     values.factureMensuelle,
@@ -253,7 +298,7 @@ export function ChatQualification() {
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-5 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
         <Reveal>
           <span className="text-sm font-semibold uppercase tracking-wide text-sun-700">
-            Votre conseiller solaire
+            Votre conseiller travaux
           </span>
           <h2 className="mt-3 font-display text-3xl font-bold text-ink sm:text-4xl">
             Découvrons ensemble votre éligibilité
@@ -272,7 +317,7 @@ export function ChatQualification() {
                     <motion.div
                       className="h-full rounded-full bg-gradient-to-r from-sun-400 to-sun-600"
                       animate={{
-                        width: `${(completed.length / SCREEN_ORDER.length) * 100}%`,
+                        width: `${(completed.length / screenOrder.length) * 100}%`,
                       }}
                       transition={{ duration: 0.4 }}
                     />
@@ -296,6 +341,26 @@ export function ChatQualification() {
 
                   {!showTyping && currentScreen && (
                     <div className="mt-4 border-t border-line pt-5">
+                      {currentScreen === "travaux" && (
+                        <div className="space-y-4">
+                          <MultiChoiceButtons
+                            options={TYPE_TRAVAUX_VALUES.map((v) => ({
+                              value: v,
+                              label: TYPE_TRAVAUX_LABELS[v],
+                            }))}
+                            values={values.typeTravaux ?? []}
+                            onToggle={toggleTravaux}
+                          />
+                          <Button
+                            className="mt-1 w-full"
+                            disabled={(values.typeTravaux ?? []).length === 0}
+                            onClick={() => goNext("travaux")}
+                          >
+                            Continuer <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                          </Button>
+                        </div>
+                      )}
+
                       {currentScreen === "identity" && (
                         <div className="grid grid-cols-2 gap-3">
                           <div>
@@ -473,6 +538,19 @@ export function ChatQualification() {
                         </div>
                       )}
 
+                      {currentScreen === "disponibilite" && (
+                        <ChoiceButtons
+                          options={[
+                            { value: "matin", label: "Le matin" },
+                            { value: "apres-midi", label: "L'après-midi" },
+                            { value: "soir", label: "Le soir" },
+                            { value: "peu-importe", label: "Peu importe" },
+                          ]}
+                          value={values.disponibiliteRappel}
+                          onSelect={(v) => selectAndAdvance("disponibilite", "disponibiliteRappel", v)}
+                        />
+                      )}
+
                       {currentScreen === "consent" && (
                         <div className="space-y-4">
                           <div className="flex items-start gap-3 rounded-2xl bg-paper p-4">
@@ -486,8 +564,9 @@ export function ChatQualification() {
                               className="mt-0.5"
                             />
                             <label htmlFor="consentement" className="text-sm leading-relaxed text-ink-soft">
-                              J&apos;accepte d&apos;être recontacté(e) par Soleil Pour Tous dans le
-                              cadre de ma demande d&apos;étude solaire gratuite.
+                              J&apos;accepte d&apos;être recontacté(e) par HABINNOVA dans le
+                              cadre de ma demande d&apos;étude gratuite pour mes travaux de
+                              rénovation énergétique.
                             </label>
                           </div>
                           <Button className="w-full" onClick={() => goNext("consent")}>
@@ -521,8 +600,8 @@ export function ChatQualification() {
                   </h3>
                   <p className="mt-3 text-ink-soft">
                     Votre foyer semble éligible à plusieurs dispositifs de soutien. Un
-                    conseiller Soleil Pour Tous vérifiera tout cela avec vous et vous
-                    recontactera rapidement pour confirmer votre éligibilité.
+                    conseiller HABINNOVA vérifiera tout cela avec vous et vous
+                    recontactera {values.disponibiliteRappel ? DISPONIBILITE_LABELS[values.disponibiliteRappel].toLowerCase() : "rapidement"} pour confirmer votre éligibilité.
                   </p>
                   {submitError && (
                     <p className="mt-4 text-sm font-medium text-red-500">
@@ -547,7 +626,7 @@ export function ChatQualification() {
         </Reveal>
 
         <Reveal delay={0.1} className="lg:sticky lg:top-24">
-          <LiveEstimatePanel estimate={estimate} />
+          <LiveEstimatePanel estimate={estimate} showSolarMetrics={wantsPhotovoltaique} />
         </Reveal>
       </div>
     </section>

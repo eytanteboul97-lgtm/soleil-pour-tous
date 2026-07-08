@@ -4,7 +4,20 @@ import { z } from "zod";
 const PHONE_REGEX = /^(?:\+33|0)[\s.-]?[1-9](?:[\s.-]?\d{2}){4}$/;
 const POSTAL_CODE_REGEX = /^\d{5}$/;
 
-export const leadFormSchema = z.object({
+export const TYPE_TRAVAUX_VALUES = [
+  "photovoltaique",
+  "pac-air-eau",
+  "pac-air-air",
+  "ballon-thermodynamique",
+  "isolation",
+  "renovation-globale",
+] as const;
+
+const baseLeadSchema = z.object({
+  typeTravaux: z
+    .array(z.enum(TYPE_TRAVAUX_VALUES))
+    .min(1, "Sélectionnez au moins un type de travaux"),
+
   prenom: z.string().trim().min(2, "Prénom trop court"),
   nom: z.string().trim().min(2, "Nom trop court"),
   email: z.string().trim().email("Adresse email invalide"),
@@ -31,26 +44,56 @@ export const leadFormSchema = z.object({
   typeChauffage: z.enum(["electrique", "gaz", "fioul", "autre"], {
     required_error: "Sélectionnez un type de chauffage",
   }),
-  surfaceToiture: z
-    .string()
-    .trim()
-    .min(1, "Champ requis")
-    .refine((v) => Number(v) > 0, "Surface invalide"),
-  orientationToit: z.enum(["sud", "est-ouest", "nord", "inconnue"], {
-    required_error: "Sélectionnez une orientation",
-  }),
+
+  // Uniquement requis si "photovoltaique" fait partie des travaux souhaités
+  // (voir le superRefine ci-dessous).
+  surfaceToiture: z.string().trim().optional().default(""),
+  orientationToit: z.enum(["sud", "est-ouest", "nord", "inconnue"]).optional(),
+
   revenuFiscal: z
     .string()
     .trim()
     .min(1, "Champ requis")
     .refine((v) => Number(v) >= 0, "Montant invalide"),
 
+  disponibiliteRappel: z.enum(["matin", "apres-midi", "soir", "peu-importe"], {
+    required_error: "Sélectionnez une disponibilité",
+  }),
+
   consentement: z
     .boolean()
     .refine((v) => v === true, "Le consentement est requis pour continuer"),
 });
 
+export const leadFormSchema = baseLeadSchema.superRefine((data, ctx) => {
+  if (data.typeTravaux.includes("photovoltaique")) {
+    if (!data.surfaceToiture || Number(data.surfaceToiture) <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["surfaceToiture"],
+        message: "Champ requis pour un projet photovoltaïque",
+      });
+    }
+    if (!data.orientationToit) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["orientationToit"],
+        message: "Sélectionnez une orientation",
+      });
+    }
+  }
+});
+
 export type LeadFormValues = z.infer<typeof leadFormSchema>;
+
+export const TYPE_TRAVAUX_LABELS: Record<(typeof TYPE_TRAVAUX_VALUES)[number], string> = {
+  photovoltaique: "Panneaux photovoltaïques",
+  "pac-air-eau": "Pompe à chaleur Air / Eau",
+  "pac-air-air": "Pompe à chaleur Air / Air",
+  "ballon-thermodynamique": "Ballon thermodynamique",
+  isolation: "Isolation thermique",
+  "renovation-globale": "Rénovation globale",
+};
 
 export const NOMBRE_PERSONNES_LABELS: Record<LeadFormValues["nombrePersonnes"], string> = {
   "1-2": "1 à 2 personnes",
@@ -65,7 +108,10 @@ export const TYPE_CHAUFFAGE_LABELS: Record<LeadFormValues["typeChauffage"], stri
   autre: "Autre",
 };
 
-export const ORIENTATION_LABELS: Record<LeadFormValues["orientationToit"], string> = {
+export const ORIENTATION_LABELS: Record<
+  NonNullable<LeadFormValues["orientationToit"]>,
+  string
+> = {
   sud: "Plein sud",
   "est-ouest": "Est / Ouest",
   nord: "Nord",
@@ -81,4 +127,11 @@ export const TYPE_LOGEMENT_LABELS: Record<LeadFormValues["typeLogement"], string
 export const STATUT_LABELS: Record<LeadFormValues["statutOccupation"], string> = {
   proprietaire: "Propriétaire",
   locataire: "Locataire",
+};
+
+export const DISPONIBILITE_LABELS: Record<LeadFormValues["disponibiliteRappel"], string> = {
+  matin: "Le matin",
+  "apres-midi": "L'après-midi",
+  soir: "Le soir",
+  "peu-importe": "Peu importe",
 };

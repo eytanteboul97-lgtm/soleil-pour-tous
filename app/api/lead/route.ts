@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       from: process.env.LEAD_FROM_EMAIL || "Soleil Pour Tous <onboarding@resend.dev>",
       to: notifyTo,
       replyTo: lead.email,
-      subject: `Nouveau lead solaire — ${lead.prenom} ${lead.nom} (${lead.ville})`,
+      subject: `Nouveau lead HABINNOVA — ${lead.prenom} ${lead.nom} (${lead.ville})`,
       html: buildLeadEmailHtml(lead, receivedAt),
     });
 

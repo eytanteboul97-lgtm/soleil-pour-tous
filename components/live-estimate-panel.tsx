@@ -58,7 +58,15 @@ function Row({
   );
 }
 
-export function LiveEstimatePanel({ estimate, className }: { estimate: LiveEstimate; className?: string }) {
+export function LiveEstimatePanel({
+  estimate,
+  className,
+  showSolarMetrics = true,
+}: {
+  estimate: LiveEstimate;
+  className?: string;
+  showSolarMetrics?: boolean;
+}) {
   const savings = useAnimatedNumber(estimate.estimatedAnnualSavings ?? 0, 600);
 
   return (
@@ -70,20 +78,24 @@ export function LiveEstimatePanel({ estimate, className }: { estimate: LiveEstim
         <Row icon={<MapPin className="h-5 w-5" aria-hidden="true" />} label="Votre secteur" ready={!!estimate.region}>
           {estimate.region ? REGION_COPY[estimate.region].label : ""}
         </Row>
-        <Row
-          icon={<PiggyBank className="h-5 w-5" aria-hidden="true" />}
-          label="Économies annuelles estimées"
-          ready={estimate.estimatedAnnualSavings != null}
-        >
-          {savings.toLocaleString("fr-FR")} €
-        </Row>
-        <Row
-          icon={<Gauge className="h-5 w-5" aria-hidden="true" />}
-          label="Puissance installable estimée"
-          ready={estimate.installableKwc != null}
-        >
-          {estimate.installableKwc?.toFixed(1)} kWc
-        </Row>
+        {showSolarMetrics && (
+          <>
+            <Row
+              icon={<PiggyBank className="h-5 w-5" aria-hidden="true" />}
+              label="Économies annuelles estimées"
+              ready={estimate.estimatedAnnualSavings != null}
+            >
+              {savings.toLocaleString("fr-FR")} €
+            </Row>
+            <Row
+              icon={<Gauge className="h-5 w-5" aria-hidden="true" />}
+              label="Puissance installable estimée"
+              ready={estimate.installableKwc != null}
+            >
+              {estimate.installableKwc?.toFixed(1)} kWc
+            </Row>
+          </>
+        )}
         <Row
           icon={<ShieldCheck className="h-5 w-5" aria-hidden="true" />}
           label="Éligibilité"

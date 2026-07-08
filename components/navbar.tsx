@@ -8,8 +8,8 @@ import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 
 const links = [
+  { href: "#solutions", label: "Solutions" },
   { href: "#aides", label: "Aides" },
-  { href: "#simulateur", label: "Simulateur" },
   { href: "#etapes", label: "Étapes" },
   { href: "#faq", label: "FAQ" },
 ];

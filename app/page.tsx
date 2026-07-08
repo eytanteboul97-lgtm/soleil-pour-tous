@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
 import { TrustSection } from "@/components/trust-section";
+import { SolutionsSection } from "@/components/solutions-section";
 import { Simulator } from "@/components/simulator";
 import { ChatQualification } from "@/components/chat-qualification";
 import { AidesTable } from "@/components/aides-table";
@@ -18,6 +19,7 @@ export default function Home() {
       <main>
         <Hero />
         <TrustSection />
+        <SolutionsSection />
         <Simulator />
         <ChatQualification />
         <AidesTable />
