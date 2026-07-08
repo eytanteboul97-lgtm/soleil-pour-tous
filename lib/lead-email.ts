@@ -8,6 +8,7 @@ import {
   TYPE_LOGEMENT_LABELS,
   TYPE_TRAVAUX_LABELS,
 } from "@/lib/lead-schema";
+import { getIncomeBand } from "@/lib/simulator";
 
 function row(label: string, value: string) {
   return `
@@ -28,6 +29,9 @@ export function buildLeadEmailHtml(lead: LeadFormValues, receivedAt: Date) {
     ? `${row("Surface de toiture", `${lead.surfaceToiture} m²`)}
        ${row("Orientation du toit", lead.orientationToit ? ORIENTATION_LABELS[lead.orientationToit] : "Non renseignée")}`
     : "";
+
+  const income = Number(lead.revenuFiscal);
+  const band = income > 0 ? getIncomeBand(income) : undefined;
 
   return `
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;">
@@ -59,6 +63,7 @@ export function buildLeadEmailHtml(lead: LeadFormValues, receivedAt: Date) {
         ${roofRows}
         ${row("Facture mensuelle", `${lead.factureMensuelle} €`)}
         ${row("Revenu fiscal de référence", `${lead.revenuFiscal} €`)}
+        ${band ? row("Profil MaPrimeRénov' estimé", `${band.eligibilityLabel} — ${band.fundingRateLabel.toLowerCase()}`) : ""}
         ${row("Disponibilité pour être rappelé(e)", DISPONIBILITE_LABELS[lead.disponibiliteRappel])}
         ${row("Consentement RGPD", "Oui, recueilli à la soumission du formulaire")}
       </tbody>

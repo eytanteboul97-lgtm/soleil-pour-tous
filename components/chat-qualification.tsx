@@ -15,7 +15,7 @@ import { AdvisorBubble, UserBubble, TypingIndicator } from "@/components/chat-bu
 import { LiveEstimatePanel, type LiveEstimate } from "@/components/live-estimate-panel";
 import { AnalyzingSequence } from "@/components/analyzing-sequence";
 import { Reveal } from "@/components/reveal";
-import { computeSimulation, regionLabel } from "@/lib/simulator";
+import { computeSimulation, getIncomeBand, regionLabel } from "@/lib/simulator";
 import {
   leadFormSchema,
   type LeadFormValues,
@@ -280,15 +280,25 @@ export function ChatQualification() {
       Number(values.surfaceToiture) > 0 &&
       Number(values.factureMensuelle) > 0;
 
+    // Le taux de prise en charge dépend du revenu fiscal, pas du type de
+    // travaux — il s'affiche dès que le revenu est connu, quel que soit le
+    // projet (photovoltaïque, pompe à chaleur, isolation...).
+    const income = Number(values.revenuFiscal);
+    const band = income > 0 ? getIncomeBand(income) : undefined;
+
     if (!hasSim) {
-      return { region: hasRegion ? regionLabel(cp as string) : undefined };
+      return {
+        region: hasRegion ? regionLabel(cp as string) : undefined,
+        eligibilityLabel: band?.eligibilityLabel,
+        fundingRateLabel: band?.fundingRateLabel,
+      };
     }
 
     const sim = computeSimulation({
       monthlyBill: Number(values.factureMensuelle) || 0,
       codePostal: cp as string,
       roofSurface: Number(values.surfaceToiture) || 0,
-      taxIncome: Number(values.revenuFiscal) || 0,
+      taxIncome: income || 0,
       orientation: values.orientationToit,
     });
 
@@ -296,7 +306,8 @@ export function ChatQualification() {
       region: regionLabel(cp as string),
       estimatedAnnualSavings: sim.estimatedAnnualSavings,
       installableKwc: sim.installableKwc,
-      eligibilityLabel: values.revenuFiscal ? sim.eligibilityLabel : undefined,
+      eligibilityLabel: band?.eligibilityLabel,
+      fundingRateLabel: band?.fundingRateLabel,
     };
   }, [
     wantsPhotovoltaique,
@@ -649,9 +660,12 @@ export function ChatQualification() {
                     Bonne nouvelle{values.prenom ? `, ${values.prenom}` : ""}.
                   </h3>
                   <p className="mt-3 text-ink-soft">
-                    Votre foyer semble éligible à plusieurs dispositifs de soutien. Un
-                    conseiller Soleil Pour Tous vérifiera tout cela avec vous et vous
-                    recontactera {values.disponibiliteRappel ? DISPONIBILITE_LABELS[values.disponibiliteRappel].toLowerCase() : "rapidement"} pour confirmer votre éligibilité.
+                    Votre foyer semble éligible à plusieurs dispositifs de soutien
+                    {estimate.fundingRateLabel
+                      ? `, avec une prise en charge estimée ${estimate.fundingRateLabel.toLowerCase()} selon le barème MaPrimeRénov' 2026`
+                      : ""}
+                    . Un conseiller Soleil Pour Tous vérifiera tout cela avec vous et
+                    vous recontactera {values.disponibiliteRappel ? DISPONIBILITE_LABELS[values.disponibiliteRappel].toLowerCase() : "rapidement"} pour confirmer votre éligibilité.
                   </p>
                   {submitError && (
                     <p className="mt-4 text-sm font-medium text-red-500">

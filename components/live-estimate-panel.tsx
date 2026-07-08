@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Gauge, MapPin, PiggyBank, ShieldCheck } from "lucide-react";
+import { Gauge, MapPin, PiggyBank, ShieldCheck, Wallet } from "lucide-react";
 import { useAnimatedNumber } from "@/lib/use-animated-number";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,7 @@ export type LiveEstimate = {
   estimatedAnnualSavings?: number;
   installableKwc?: number;
   eligibilityLabel?: string;
+  fundingRateLabel?: string;
 };
 
 function Row({
@@ -106,9 +107,17 @@ export function LiveEstimatePanel({
         >
           {estimate.eligibilityLabel}
         </Row>
+        <Row
+          icon={<Wallet className="h-5 w-5" aria-hidden="true" />}
+          label="Aides estimées (MaPrimeRénov')"
+          ready={!!estimate.fundingRateLabel}
+        >
+          {estimate.fundingRateLabel}
+        </Row>
       </div>
       <p className="mt-4 text-xs leading-relaxed text-white/40">
-        Estimation indicative, non contractuelle — confirmée lors de l&apos;étude
+        Estimation indicative, non contractuelle, basée sur les barèmes 2026
+        pour un foyer de référence — confirmée lors de l&apos;étude
         personnalisée.
       </p>
     </div>

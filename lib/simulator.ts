@@ -3,10 +3,18 @@
 // seule une étude technique personnalisée permet de confirmer un dimensionnement.
 
 const PRICE_PER_KWH = 0.25; // € — prix moyen indicatif de l'électricité
-const SURPLUS_SELL_PRICE = 0.1; // € / kWh — tarif indicatif de rachat du surplus
+// Tarif d'obligation d'achat du surplus fixé à 1,1 c€/kWh HT depuis le 5 juin 2026
+// (arrêté du 1er juin 2026, qui a aussi supprimé la prime à l'autoconsommation).
+const SURPLUS_SELL_PRICE = 0.011; // € / kWh
 const YIELD_PER_KWC = 1100; // kWh / kWc / an — production moyenne indicative en France
 const M2_PER_KWC = 6; // m² de toiture indicatifs nécessaires par kWc installé
 const SELF_CONSUMPTION_RATE = 0.45; // part indicative auto-consommée sans batterie
+
+// Repères MaPrimeRénov' 2026 pour un foyer de 2 personnes hors Île-de-France.
+// Le seuil exact dépend de la taille du foyer et de la zone géographique —
+// à confirmer précisément lors de l'étude personnalisée.
+const INCOME_BAND_TRES_MODESTE_MAX = 25393; // "bleu"
+const INCOME_BAND_INTERMEDIAIRE_MAX = 45842; // plafond "violet"
 
 const SOUTH_DEPARTMENTS = new Set([
   "04", "05", "06", "11", "13", "20", "2A", "2B", "30", "31", "34", "40", "64", "65", "66", "83", "84",
@@ -44,13 +52,42 @@ export type SimulatorInput = {
   orientation?: "sud" | "est-ouest" | "nord" | "inconnue";
 };
 
-export type SimulatorResult = {
-  installableKwc: number;
-  estimatedAnnualSavings: number;
+export type IncomeBand = {
   eligibilityLevel: "renforcee" | "standard" | "a-confirmer";
   eligibilityLabel: string;
+  fundingRateLabel: string;
+};
+
+export type SimulatorResult = IncomeBand & {
+  installableKwc: number;
+  estimatedAnnualSavings: number;
   nextStep: string;
 };
+
+// Classement par tranche de revenu fiscal de référence, indépendant du type de
+// travaux — s'applique aussi bien au photovoltaïque qu'à la pompe à chaleur,
+// l'isolation, etc. Voir la note sur les seuils MaPrimeRénov' plus haut.
+export function getIncomeBand(taxIncome: number): IncomeBand {
+  if (taxIncome > 0 && taxIncome <= INCOME_BAND_TRES_MODESTE_MAX) {
+    return {
+      eligibilityLevel: "renforcee",
+      eligibilityLabel: "Éligibilité renforcée probable",
+      fundingRateLabel: "Jusqu'à 90 % des travaux",
+    };
+  }
+  if (taxIncome > INCOME_BAND_INTERMEDIAIRE_MAX) {
+    return {
+      eligibilityLevel: "a-confirmer",
+      eligibilityLabel: "Éligibilité à confirmer selon profil",
+      fundingRateLabel: "Jusqu'à 40 % des travaux",
+    };
+  }
+  return {
+    eligibilityLevel: "standard",
+    eligibilityLabel: "Éligibilité probable selon profil",
+    fundingRateLabel: "Prise en charge possible entre 60 % et 75 % des travaux",
+  };
+}
 
 export function computeSimulation({
   monthlyBill,
@@ -79,21 +116,10 @@ export function computeSimulation({
     selfConsumedKwh * PRICE_PER_KWH + surplusKwh * SURPLUS_SELL_PRICE
   );
 
-  let eligibilityLevel: SimulatorResult["eligibilityLevel"] = "standard";
-  let eligibilityLabel = "Éligibilité probable selon profil";
-  if (taxIncome > 0 && taxIncome < 25000) {
-    eligibilityLevel = "renforcee";
-    eligibilityLabel = "Éligibilité renforcée probable";
-  } else if (taxIncome > 45000) {
-    eligibilityLevel = "a-confirmer";
-    eligibilityLabel = "Éligibilité à confirmer selon profil";
-  }
-
   return {
     installableKwc: Math.round(installableKwc * 10) / 10,
     estimatedAnnualSavings,
-    eligibilityLevel,
-    eligibilityLabel,
+    ...getIncomeBand(taxIncome),
     nextStep:
       "Demandez votre étude gratuite pour confirmer ces estimations avec un conseiller.",
   };
