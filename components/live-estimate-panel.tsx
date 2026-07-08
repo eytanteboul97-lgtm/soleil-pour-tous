@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Gauge, MapPin, PiggyBank, ShieldCheck, Wallet } from "lucide-react";
+import { Gauge, MapPin, ShieldCheck, Wallet } from "lucide-react";
 import { useAnimatedNumber } from "@/lib/use-animated-number";
 import { cn } from "@/lib/utils";
 import { NOMBRE_PERSONNES_LABELS, type LeadFormValues } from "@/lib/lead-schema";
@@ -39,11 +39,76 @@ const REGION_COPY: Record<"sud" | "nord" | "centre", { label: string; detail: st
 
 export type LiveEstimate = {
   region?: "sud" | "nord" | "centre";
-  estimatedAnnualSavings?: number;
   installableKwc?: number;
   eligibilityLabel?: string;
   fundingRateLabel?: string;
+  currentBill?: number;
+  projectedBill?: number;
 };
+
+function BillComparison({
+  currentBill,
+  projectedBill,
+}: {
+  currentBill: number;
+  projectedBill?: number;
+}) {
+  const ready = projectedBill != null;
+  const current = useAnimatedNumber(currentBill, 600);
+  const projected = useAnimatedNumber(projectedBill ?? currentBill, 900);
+  const reductionPercent = ready ? Math.round(100 - (projectedBill! / currentBill) * 100) : 0;
+  const projectedWidth = ready ? Math.max((projectedBill! / currentBill) * 100, 8) : 100;
+
+  return (
+    <div className="mb-3 rounded-2xl bg-white/5 p-4">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-white/50">Facture mensuelle estimée</p>
+        <AnimatePresence>
+          {ready && (
+            <motion.span
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="rounded-full bg-leaf-500/15 px-2 py-0.5 text-xs font-semibold text-leaf-400"
+            >
+              -{reductionPercent} %
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className="mt-3 space-y-2.5">
+        <div>
+          <div className="mb-1 flex items-baseline justify-between text-xs text-white/60">
+            <span>Aujourd&apos;hui</span>
+            <span className="font-display text-sm font-semibold text-white">{current} €</span>
+          </div>
+          <div className="h-2 w-full rounded-full bg-white/10" />
+        </div>
+
+        <div>
+          <div className="mb-1 flex items-baseline justify-between text-xs text-white/60">
+            <span>Avec Soleil Pour Tous</span>
+            <span
+              className={cn(
+                "font-display text-sm font-semibold",
+                ready ? "text-leaf-400" : "text-white/25"
+              )}
+            >
+              {ready ? `${projected} €` : "—"}
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-leaf-400 to-leaf-500"
+              animate={{ width: `${projectedWidth}%` }}
+              transition={{ duration: 1, ease: "easeOut" }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Row({
   icon,
@@ -97,8 +162,6 @@ export function LiveEstimatePanel({
   civilite?: LeadFormValues["civilite"];
   nombrePersonnes?: LeadFormValues["nombrePersonnes"];
 }) {
-  const savings = useAnimatedNumber(estimate.estimatedAnnualSavings ?? 0, 600);
-
   return (
     <div
       aria-live="polite"
@@ -129,27 +192,22 @@ export function LiveEstimatePanel({
         ) : null}
       </AnimatePresence>
 
+      {estimate.currentBill != null && (
+        <BillComparison currentBill={estimate.currentBill} projectedBill={estimate.projectedBill} />
+      )}
+
       <div className="space-y-3">
         <Row icon={<MapPin className="h-5 w-5" aria-hidden="true" />} label="Votre secteur" ready={!!estimate.region}>
           {estimate.region ? REGION_COPY[estimate.region].label : ""}
         </Row>
         {showSolarMetrics && (
-          <>
-            <Row
-              icon={<PiggyBank className="h-5 w-5" aria-hidden="true" />}
-              label="Économies annuelles estimées"
-              ready={estimate.estimatedAnnualSavings != null}
-            >
-              {savings.toLocaleString("fr-FR")} €
-            </Row>
-            <Row
-              icon={<Gauge className="h-5 w-5" aria-hidden="true" />}
-              label="Puissance installable estimée"
-              ready={estimate.installableKwc != null}
-            >
-              {estimate.installableKwc?.toFixed(1)} kWc
-            </Row>
-          </>
+          <Row
+            icon={<Gauge className="h-5 w-5" aria-hidden="true" />}
+            label="Puissance installable estimée"
+            ready={estimate.installableKwc != null}
+          >
+            {estimate.installableKwc?.toFixed(1)} kWc
+          </Row>
         )}
         <Row
           icon={<ShieldCheck className="h-5 w-5" aria-hidden="true" />}

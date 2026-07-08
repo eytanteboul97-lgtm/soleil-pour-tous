@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Cylinder, Droplets, Hammer, Layers, Sun, Wind } from "lucide-react";
+import { ArrowRight, ChevronDown, Cylinder, Droplets, Hammer, Layers, Sun, Wind } from "lucide-react";
 import { Reveal } from "@/components/reveal";
 import { Button } from "@/components/ui/button";
 import { TYPE_TRAVAUX_LABELS, type LeadFormValues } from "@/lib/lead-schema";
@@ -74,15 +74,22 @@ export function SolutionsSection() {
             <Reveal
               key={solution.key}
               delay={i * 0.07}
-              className="group flex flex-col rounded-3xl border border-line bg-white p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-sun-300 hover:shadow-card"
+              tabIndex={0}
+              className="group flex flex-col rounded-3xl border border-line bg-white p-7 outline-none transition-all duration-300 hover:-translate-y-1.5 hover:border-sun-300 hover:shadow-card focus-visible:-translate-y-1.5 focus-visible:border-sun-300 focus-visible:shadow-card focus-visible:ring-2 focus-visible:ring-sun-400 focus-visible:ring-offset-2"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sun-500/10 text-sun-700 transition-transform duration-300 group-hover:scale-110">
-                <solution.icon className="h-6 w-6" aria-hidden="true" />
-              </span>
+              <div className="flex items-start justify-between">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sun-500/10 text-sun-700 transition-transform duration-300 group-hover:scale-110">
+                  <solution.icon className="h-6 w-6" aria-hidden="true" />
+                </span>
+                <ChevronDown
+                  className="mt-1 h-4 w-4 text-mist/60 transition-transform duration-300 group-hover:-rotate-180 group-focus-within:-rotate-180"
+                  aria-hidden="true"
+                />
+              </div>
               <h3 className="mt-5 font-display text-lg font-semibold text-ink">
                 {TYPE_TRAVAUX_LABELS[solution.key]}
               </h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-mist">
+              <p className="max-h-0 overflow-hidden text-sm leading-relaxed text-mist opacity-0 transition-all duration-300 ease-out group-hover:mt-2 group-hover:max-h-32 group-hover:opacity-100 group-focus-within:mt-2 group-focus-within:max-h-32 group-focus-within:opacity-100">
                 {solution.description}
               </p>
               <Button

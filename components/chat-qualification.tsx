@@ -16,6 +16,7 @@ import { LiveEstimatePanel, type LiveEstimate } from "@/components/live-estimate
 import { AnalyzingSequence } from "@/components/analyzing-sequence";
 import { Reveal } from "@/components/reveal";
 import { computeSimulation, getIncomeBand, regionLabel } from "@/lib/simulator";
+import { estimateReferenceMonthlyBill, estimateSavingsRate } from "@/lib/reference-bill";
 import { useAddressAutocomplete } from "@/lib/use-address-autocomplete";
 import {
   leadFormSchema,
@@ -189,8 +190,8 @@ export function ChatQualification() {
       "statut",
       "logement",
       "personnes",
-      "facture",
       "chauffage",
+      "facture",
     ];
     if (wantsPhotovoltaique) order.push("toiture");
     order.push("revenu", "disponibilite", "consent");
@@ -303,28 +304,54 @@ export function ChatQualification() {
     const income = Number(values.revenuFiscal);
     const band = income > 0 ? getIncomeBand(income) : undefined;
 
-    if (!hasSim) {
-      return {
-        region: hasRegion ? regionLabel(cp as string) : undefined,
-        eligibilityLabel: band?.eligibilityLabel,
-        fundingRateLabel: band?.fundingRateLabel,
-      };
+    // Facture "avant" : celle déclarée par le client si on l'a déjà, sinon
+    // une facture de référence déduite du profil du foyer (dès que logement,
+    // chauffage et taille du foyer sont connus) — utile pour montrer une
+    // comparaison avant même que la question de la facture soit posée.
+    const declaredBill = Number(values.factureMensuelle) || undefined;
+    const referenceBill =
+      values.nombrePersonnes && values.typeLogement && values.typeChauffage
+        ? estimateReferenceMonthlyBill(
+            values.nombrePersonnes,
+            values.typeLogement,
+            values.typeChauffage
+          )
+        : undefined;
+    const currentBill = declaredBill ?? referenceBill;
+
+    let sim: ReturnType<typeof computeSimulation> | undefined;
+    if (hasSim) {
+      sim = computeSimulation({
+        monthlyBill: Number(values.factureMensuelle) || 0,
+        codePostal: cp as string,
+        roofSurface: Number(values.surfaceToiture) || 0,
+        taxIncome: income || 0,
+        orientation: values.orientationToit,
+      });
     }
 
-    const sim = computeSimulation({
-      monthlyBill: Number(values.factureMensuelle) || 0,
-      codePostal: cp as string,
-      roofSurface: Number(values.surfaceToiture) || 0,
-      taxIncome: income || 0,
-      orientation: values.orientationToit,
-    });
+    let projectedBill: number | undefined;
+    if (currentBill) {
+      if (sim) {
+        // Photovoltaïque : on réutilise le calcul précis en kWh, avec un
+        // plancher réaliste (un foyer garde toujours une conso de base).
+        projectedBill = Math.max(
+          currentBill - Math.round(sim.estimatedAnnualSavings / 12),
+          Math.round(currentBill * 0.2)
+        );
+      } else {
+        const rate = estimateSavingsRate(values.typeTravaux ?? []);
+        if (rate > 0) projectedBill = Math.round(currentBill * (1 - rate));
+      }
+    }
 
     return {
-      region: regionLabel(cp as string),
-      estimatedAnnualSavings: sim.estimatedAnnualSavings,
-      installableKwc: sim.installableKwc,
+      region: hasRegion ? regionLabel(cp as string) : undefined,
+      installableKwc: sim?.installableKwc,
       eligibilityLabel: band?.eligibilityLabel,
       fundingRateLabel: band?.fundingRateLabel,
+      currentBill,
+      projectedBill,
     };
   }, [
     wantsPhotovoltaique,
@@ -333,6 +360,10 @@ export function ChatQualification() {
     values.factureMensuelle,
     values.revenuFiscal,
     values.orientationToit,
+    values.nombrePersonnes,
+    values.typeLogement,
+    values.typeChauffage,
+    values.typeTravaux,
   ]);
 
   return (

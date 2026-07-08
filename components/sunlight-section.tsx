@@ -1,8 +1,9 @@
 "use client";
 
+import { useId } from "react";
+import { motion } from "framer-motion";
 import { Sun } from "lucide-react";
 import { Reveal } from "@/components/reveal";
-import { cn } from "@/lib/utils";
 
 const ZONES = [
   {
@@ -25,10 +26,59 @@ const ZONES = [
   },
 ];
 
+function SunGauge({ strength }: { strength: number }) {
+  const gradientId = useId();
+  const size = 104;
+  const stroke = 9;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference * (1 - strength / 100);
+
+  return (
+    <div className="relative h-[104px] w-[104px] shrink-0">
+      <svg width={size} height={size} className="-rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          strokeWidth={stroke}
+          fill="none"
+          className="stroke-line"
+        />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={`url(#${gradientId})`}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          fill="none"
+          strokeDasharray={circumference}
+          initial={{ strokeDashoffset: circumference }}
+          whileInView={{ strokeDashoffset: offset }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 1.3, ease: "easeOut" }}
+        />
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#FFC24B" />
+            <stop offset="100%" stopColor="#F2680A" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="font-display text-xl font-bold text-ink">{strength}%</span>
+      </div>
+    </div>
+  );
+}
+
 export function SunlightSection() {
   return (
-    <section className="bg-white py-20 sm:py-28">
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+    <section className="relative overflow-hidden bg-white py-20 sm:py-28">
+      <div className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-sun-radial opacity-[0.06] blur-3xl" />
+
+      <div className="relative mx-auto max-w-6xl px-5 sm:px-8">
         <Reveal className="mx-auto max-w-2xl text-center">
           <span className="text-sm font-semibold uppercase tracking-wide text-sun-700">
             Ensoleillement en France
@@ -48,24 +98,16 @@ export function SunlightSection() {
             <Reveal
               key={zone.label}
               delay={i * 0.1}
-              className="rounded-3xl border border-line bg-paper p-7"
+              className="group flex flex-col items-center rounded-3xl border border-line bg-paper p-7 text-center transition-all duration-300 hover:-translate-y-1.5 hover:border-sun-300 hover:shadow-card"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sun-500/10 text-sun-700">
-                <Sun className="h-5 w-5" aria-hidden="true" />
+              <SunGauge strength={zone.strength} />
+              <span className="mt-5 flex h-9 w-9 items-center justify-center rounded-xl bg-sun-500/10 text-sun-700 transition-transform duration-300 group-hover:scale-110">
+                <Sun className="h-4 w-4" aria-hidden="true" />
               </span>
-              <h3 className="mt-4 font-display text-lg font-semibold text-ink">
+              <h3 className="mt-3 font-display text-lg font-semibold text-ink">
                 {zone.label}
               </h3>
               <p className="mt-1 text-sm text-mist">{zone.detail}</p>
-
-              <div className="mt-5 h-2 w-full overflow-hidden rounded-full bg-line">
-                <div
-                  className={cn(
-                    "h-full rounded-full bg-gradient-to-r from-sun-400 to-sun-600 transition-all duration-1000"
-                  )}
-                  style={{ width: `${zone.strength}%` }}
-                />
-              </div>
               <p className="mt-3 text-xs leading-relaxed text-mist">{zone.note}</p>
             </Reveal>
           ))}
