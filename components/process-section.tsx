@@ -23,7 +23,7 @@ const STEPS = [
   {
     icon: Wrench,
     title: "Installation et mise en service",
-    description: "Pose par des professionnels qualifiés, puis raccordement.",
+    description: "Pose par l'un de nos installateurs partenaires certifiés, puis raccordement.",
   },
 ];
 

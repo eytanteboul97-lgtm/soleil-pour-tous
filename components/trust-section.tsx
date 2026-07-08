@@ -4,7 +4,7 @@ import { Reveal } from "@/components/reveal";
 const ITEMS = [
   { icon: Wallet, label: "Étude gratuite" },
   { icon: ClipboardList, label: "Accompagnement administratif" },
-  { icon: HardHat, label: "Installation par professionnels qualifiés" },
+  { icon: HardHat, label: "Installation par des partenaires certifiés" },
   { icon: SlidersHorizontal, label: "Simulation personnalisée" },
   { icon: BadgeCheck, label: "Aides vérifiées selon votre profil" },
 ];

@@ -38,9 +38,14 @@ const QUESTIONS = [
       "Un conseiller Soleil Pour Tous vous recontacte au moment que vous avez choisi, pour confirmer votre éligibilité et répondre à vos questions. Si vous le souhaitez, une étude technique à domicile peut ensuite être organisée — aucune signature n'est demandée à ce stade.",
   },
   {
+    question: "Est-ce Soleil Pour Tous qui réalise les travaux ?",
+    answer:
+      "Non : Soleil Pour Tous est un service de mise en relation. Nous étudions votre éligibilité et vous mettons en contact avec un installateur partenaire certifié, sélectionné pour votre projet — c'est lui qui réalise les travaux.",
+  },
+  {
     question: "Combien de temps dure une installation ?",
     answer:
-      "Pour la plupart des projets (pompe à chaleur, panneaux solaires, chauffe-eau thermodynamique), l'installation se fait en une à deux journées par des professionnels qualifiés. Les travaux d'isolation ou de rénovation globale peuvent prendre plus de temps selon leur ampleur — le délai exact vous est communiqué après l'étude technique.",
+      "Pour la plupart des projets (pompe à chaleur, panneaux solaires, chauffe-eau thermodynamique), l'installation est réalisée en une à deux journées par l'installateur partenaire retenu. Les travaux d'isolation ou de rénovation globale peuvent prendre plus de temps selon leur ampleur — le délai exact vous est communiqué après l'étude technique.",
   },
   {
     question: "Puis-je financer mon installation ?",

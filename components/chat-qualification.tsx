@@ -80,7 +80,9 @@ function assistantMessage(screen: ScreenId, v: Partial<LeadFormValues>): string 
     case "statut":
       return "Êtes-vous propriétaire ou locataire de ce logement ?";
     case "logement":
-      return "Et de quel type de logement s'agit-il ?";
+      return v.statutOccupation === "locataire"
+        ? "Et de quel type de logement s'agit-il ? Petite précision : en tant que locataire, l'accord de votre propriétaire sera nécessaire avant les travaux — votre conseiller pourra vous accompagner pour en discuter avec lui."
+        : "Et de quel type de logement s'agit-il ?";
     case "personnes":
       return "Combien de personnes vivent dans le foyer ? Cela m'aide à mieux estimer votre consommation.";
     case "facture":
