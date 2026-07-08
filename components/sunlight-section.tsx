@@ -71,7 +71,7 @@ export function SunlightSection() {
           ))}
         </div>
 
-        <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-mist/70">
+        <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-mist">
           Répartition indicative à titre pédagogique. Le simulateur ci-dessus
           affine cette estimation à partir de votre code postal précis.
         </p>

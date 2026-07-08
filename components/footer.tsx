@@ -16,13 +16,16 @@ export function Footer() {
           </div>
 
           <nav className="flex flex-col gap-3 text-sm">
-            <Link href="/mentions-legales" className="hover:text-white">
+            <Link href="/mentions-legales" className="focus-ring-dark rounded-sm hover:text-white">
               Mentions légales
             </Link>
-            <Link href="/politique-confidentialite" className="hover:text-white">
+            <Link
+              href="/politique-confidentialite"
+              className="focus-ring-dark rounded-sm hover:text-white"
+            >
               Politique de confidentialité
             </Link>
-            <a href="#eligibilite" className="hover:text-white">
+            <a href="#eligibilite" className="focus-ring-dark rounded-sm hover:text-white">
               Consentement RGPD
             </a>
           </nav>

@@ -44,9 +44,29 @@ const QUESTIONS = [
   },
 ];
 
+// Reflète exactement les questions/réponses visibles ci-dessous — un
+// FAQPage schema.org n'est légitime que s'il correspond au contenu réel
+// affiché sur la page, condition ici toujours vraie par construction.
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: QUESTIONS.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
+};
+
 export function FAQ() {
   return (
     <section id="faq" className="anchor-offset bg-paper py-20 sm:py-28">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <div className="mx-auto max-w-3xl px-5 sm:px-8">
         <Reveal className="text-center">
           <span className="text-sm font-semibold uppercase tracking-wide text-sun-700">

@@ -16,7 +16,10 @@ export default function PolitiqueConfidentialitePage() {
       </header>
 
       <main className="mx-auto max-w-3xl px-5 py-24 sm:px-8">
-        <Link href="/" className="text-sm font-medium text-sun-700 hover:underline">
+        <Link
+          href="/"
+          className="focus-ring-light rounded-sm text-sm font-medium text-sun-700 hover:underline"
+        >
           ← Retour à l&apos;accueil
         </Link>
 

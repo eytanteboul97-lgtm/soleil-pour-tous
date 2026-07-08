@@ -20,8 +20,8 @@ export function Logo({
     <Link
       href="/"
       className={cn(
-        "group flex items-center gap-3",
-        isDark ? "text-white" : "text-ink",
+        "group flex items-center gap-3 rounded-lg",
+        isDark ? "focus-ring-dark text-white" : "focus-ring-light text-ink",
         className
       )}
     >

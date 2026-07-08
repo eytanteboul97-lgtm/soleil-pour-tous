@@ -16,6 +16,7 @@ import { LiveEstimatePanel, type LiveEstimate } from "@/components/live-estimate
 import { AnalyzingSequence } from "@/components/analyzing-sequence";
 import { Reveal } from "@/components/reveal";
 import { computeSimulation, getIncomeBand, regionLabel } from "@/lib/simulator";
+import { useAddressAutocomplete } from "@/lib/use-address-autocomplete";
 import {
   leadFormSchema,
   type LeadFormValues,
@@ -236,11 +237,24 @@ export function ChatQualification() {
 
   useEffect(() => {
     if (showTyping || !currentScreen) return;
+    // Skip the very first screen: auto-focusing here would hijack whatever
+    // the visitor already had focused (skip link, nav, browser chrome) a
+    // few hundred milliseconds after page load, with no action of theirs to
+    // justify it. From the second screen onward, the transition was
+    // directly caused by the visitor's own click, so moving focus into the
+    // next question is an expected continuation, not a surprise.
+    if (completed.length === 0) return;
     const focusable = screenInputRef.current?.querySelector<HTMLElement>(
       "input, button, [tabindex]"
     );
     focusable?.focus({ preventScroll: true });
-  }, [currentScreen, showTyping]);
+  }, [currentScreen, showTyping, completed.length]);
+
+  useAddressAutocomplete(currentScreen === "address", "adresse", (result) => {
+    setValue("adresse", result.adresse, { shouldValidate: true });
+    if (result.codePostal) setValue("codePostal", result.codePostal, { shouldValidate: true });
+    if (result.ville) setValue("ville", result.ville, { shouldValidate: true });
+  });
 
   async function goNext(screen: ScreenId) {
     const valid = await trigger(FIELDS_BY_SCREEN[screen]);
@@ -445,11 +459,21 @@ export function ChatQualification() {
                           <div className="grid grid-cols-2 gap-3">
                             <div>
                               <Label htmlFor="prenom">Prénom</Label>
-                              <Input id="prenom" error={!!errors.prenom} {...register("prenom")} />
+                              <Input
+                                id="prenom"
+                                autoComplete="given-name"
+                                error={!!errors.prenom}
+                                {...register("prenom")}
+                              />
                             </div>
                             <div>
                               <Label htmlFor="nom">Nom</Label>
-                              <Input id="nom" error={!!errors.nom} {...register("nom")} />
+                              <Input
+                                id="nom"
+                                autoComplete="family-name"
+                                error={!!errors.nom}
+                                {...register("nom")}
+                              />
                             </div>
                           </div>
                           <div>
@@ -473,13 +497,22 @@ export function ChatQualification() {
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <div>
                             <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" error={!!errors.email} {...register("email")} />
+                            <Input
+                              id="email"
+                              type="email"
+                              autoComplete="email"
+                              inputMode="email"
+                              error={!!errors.email}
+                              {...register("email")}
+                            />
                           </div>
                           <div>
                             <Label htmlFor="telephone">Téléphone</Label>
                             <Input
                               id="telephone"
                               type="tel"
+                              autoComplete="tel"
+                              inputMode="tel"
                               placeholder="06 12 34 56 78"
                               error={!!errors.telephone}
                               {...register("telephone")}
@@ -495,15 +528,32 @@ export function ChatQualification() {
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <div className="sm:col-span-2">
                             <Label htmlFor="adresse">Adresse</Label>
-                            <Input id="adresse" error={!!errors.adresse} {...register("adresse")} />
+                            <Input
+                              id="adresse"
+                              autoComplete="off"
+                              placeholder="Commencez à taper votre adresse…"
+                              error={!!errors.adresse}
+                              {...register("adresse")}
+                            />
                           </div>
                           <div>
                             <Label htmlFor="codePostal">Code postal</Label>
-                            <Input id="codePostal" inputMode="numeric" error={!!errors.codePostal} {...register("codePostal")} />
+                            <Input
+                              id="codePostal"
+                              inputMode="numeric"
+                              autoComplete="postal-code"
+                              error={!!errors.codePostal}
+                              {...register("codePostal")}
+                            />
                           </div>
                           <div>
                             <Label htmlFor="ville">Ville</Label>
-                            <Input id="ville" error={!!errors.ville} {...register("ville")} />
+                            <Input
+                              id="ville"
+                              autoComplete="address-level2"
+                              error={!!errors.ville}
+                              {...register("ville")}
+                            />
                           </div>
                           <Button className="sm:col-span-2 mt-1" onClick={() => goNext("address")}>
                             Continuer <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -706,7 +756,7 @@ export function ChatQualification() {
                       recontacter directement pour confirmer.
                     </p>
                   )}
-                  <p className="mt-4 text-xs text-mist/70">
+                  <p className="mt-4 text-xs text-mist">
                     Aucune aide n&apos;est garantie avant validation complète de votre dossier.
                   </p>
                 </motion.div>

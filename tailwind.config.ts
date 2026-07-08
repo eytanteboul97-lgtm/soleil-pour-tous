@@ -26,7 +26,10 @@ const config: Config = {
           400: "#FFA51E",
           500: "#FF8A1E",
           600: "#F2680A",
-          700: "#C4530A",
+          // Darkened from #C4530A: the original only cleared 4.5:1 (WCAG AA)
+          // on pure white — it read as low as 4.27:1 against bg-sun-50 and
+          // bg-paper, both of which this token sits on across the site.
+          700: "#B84C09",
         },
         volt: {
           300: "#7DF0E0",

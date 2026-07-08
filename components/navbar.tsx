@@ -62,7 +62,7 @@ export function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-white/80 transition-colors hover:text-white"
+              className="focus-ring-dark rounded-sm text-sm font-medium text-white/80 transition-colors hover:text-white"
             >
               {link.label}
             </a>
@@ -80,7 +80,7 @@ export function Navbar() {
           aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
           aria-expanded={open}
           aria-controls="mobile-menu"
-          className="grid h-10 w-10 place-items-center rounded-full text-white md:hidden"
+          className="focus-ring-dark grid h-10 w-10 place-items-center rounded-full text-white md:hidden"
           onClick={() => setOpen((v) => !v)}
         >
           {open ? <X className="h-6 w-6" aria-hidden="true" /> : <Menu className="h-6 w-6" aria-hidden="true" />}
@@ -103,7 +103,7 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="rounded-lg px-3 py-3 text-base font-medium text-white/85 hover:bg-white/5"
+                  className="focus-ring-dark rounded-lg px-3 py-3 text-base font-medium text-white/85 hover:bg-white/5"
                 >
                   {link.label}
                 </a>

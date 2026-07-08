@@ -104,7 +104,7 @@ export function LiveEstimatePanel({
       aria-live="polite"
       className={cn("rounded-3xl bg-gradient-to-br from-night-raised to-night p-6 shadow-glow", className)}
     >
-      <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-white/40">
+      <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-white/50">
         Votre profil, en direct
       </p>
 
@@ -166,7 +166,7 @@ export function LiveEstimatePanel({
           {estimate.fundingRateLabel}
         </Row>
       </div>
-      <p className="mt-4 text-xs leading-relaxed text-white/40">
+      <p className="mt-4 text-xs leading-relaxed text-white/50">
         Estimation indicative, non contractuelle, basée sur les barèmes 2026
         pour un foyer de référence — confirmée lors de l&apos;étude
         personnalisée.

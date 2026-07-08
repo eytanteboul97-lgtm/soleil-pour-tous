@@ -65,7 +65,7 @@ export function AnalyzingSequence({ onComplete }: { onComplete: () => void }) {
                   <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
                 ) : null}
               </span>
-              <span className={cn("text-sm", done || active ? "text-ink-soft" : "text-mist/60")}>
+              <span className={cn("text-sm", done || active ? "text-ink-soft" : "text-mist")}>
                 {step}
               </span>
             </li>

@@ -26,10 +26,10 @@ export function MultiChoiceButtons<T extends string>({
             whileTap={{ scale: 0.97 }}
             onClick={() => onToggle(option.value)}
             className={cn(
-              "flex items-center gap-3 rounded-2xl border px-4 py-3.5 text-left text-sm font-semibold transition-all duration-200",
+              "flex items-center gap-3 rounded-2xl border px-4 py-3.5 text-left text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sun-400 focus-visible:ring-offset-2",
               selected
                 ? "border-sun-400 bg-sun-50 text-sun-700 shadow-card-sm"
-                : "border-line bg-white text-ink-soft hover:border-sun-300 hover:bg-sun-50/50"
+                : "border-line bg-white text-ink-soft hover:border-sun-300 hover:bg-sun-50/50 active:bg-sun-50"
             )}
           >
             <span

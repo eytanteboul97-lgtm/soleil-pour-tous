@@ -9,12 +9,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        sun: "bg-gradient-to-r from-sun-400 to-sun-600 text-white shadow-glow hover:shadow-[0_0_100px_-15px_rgba(255,138,30,0.7)] hover:-translate-y-0.5 active:translate-y-0",
+        sun: "bg-gradient-to-r from-sun-400 to-sun-600 text-white shadow-glow hover:shadow-[0_0_100px_-15px_rgba(255,138,30,0.7)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-none",
         outline:
-          "border border-line bg-white/70 text-ink hover:bg-white hover:-translate-y-0.5",
-        ghost: "text-ink hover:bg-ink/5",
-        "ghost-light": "text-white hover:bg-white/10",
-        volt: "bg-gradient-to-r from-volt-400 to-volt-600 text-night shadow-glow-volt hover:-translate-y-0.5",
+          "border border-line bg-white/70 text-ink hover:bg-white hover:-translate-y-0.5 active:translate-y-0 active:bg-white",
+        ghost: "text-ink hover:bg-ink/5 active:bg-ink/10",
+        "ghost-light": "text-white hover:bg-white/10 active:bg-white/15",
+        volt: "bg-gradient-to-r from-volt-400 to-volt-600 text-night shadow-glow-volt hover:-translate-y-0.5 active:translate-y-0",
       },
       size: {
         default: "h-12 px-6 text-[0.95rem]",

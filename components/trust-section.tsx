@@ -11,7 +11,7 @@ const ITEMS = [
 
 export function TrustSection() {
   return (
-    <section className="border-y border-line bg-paper py-14">
+    <section aria-label="Nos engagements" className="border-y border-line bg-paper py-14">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
           {ITEMS.map((item, i) => (

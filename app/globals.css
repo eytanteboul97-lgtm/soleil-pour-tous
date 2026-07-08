@@ -47,6 +47,15 @@
   .anchor-offset {
     scroll-margin-top: 5.5rem;
   }
+
+  /* Consistent branded focus ring for plain links/text buttons that don't
+     go through the <Button> primitive (nav links, footer links, back-links). */
+  .focus-ring-dark {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sun-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night;
+  }
+  .focus-ring-light {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sun-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
