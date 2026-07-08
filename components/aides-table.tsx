@@ -9,6 +9,13 @@ const AIDES: {
   variant: BadgeProps["variant"];
 }[] = [
   {
+    nom: "MaPrimeRénov'",
+    description:
+      "Aide de l'État calculée selon vos revenus, pour la pompe à chaleur, l'isolation ou le chauffe-eau thermodynamique. Le taux de prise en charge estimé pour votre profil s'affiche pendant votre échange avec le conseiller virtuel.",
+    status: "Disponible selon profil",
+    variant: "conditional",
+  },
+  {
     nom: "TVA réduite",
     description:
       "TVA réduite applicable sous conditions selon la puissance et la nature de l'installation.",
@@ -54,11 +61,11 @@ export function AidesTable() {
             Cadre légal
           </span>
           <h2 className="mt-3 font-display text-3xl font-bold text-ink sm:text-4xl">
-            Les aides disponibles pour le photovoltaïque en France
+            Les aides disponibles pour vos travaux de rénovation énergétique
           </h2>
         </Reveal>
 
-        <Reveal delay={0.1} className="mt-12 overflow-hidden rounded-3xl border border-line shadow-card-sm">
+        <Reveal delay={0.1} className="mt-14 overflow-hidden rounded-3xl border border-line shadow-card-sm">
           {/* Desktop table */}
           <table className="hidden w-full text-left md:table">
             <thead>

@@ -88,8 +88,8 @@ export function SunlightSection() {
           </h2>
           <p className="mt-4 text-mist">
             La France bénéficie d&apos;un ensoleillement globalement favorable au
-            photovoltaïque — avec des écarts régionaux dont notre simulateur
-            tient compte.
+            photovoltaïque — avec des écarts régionaux dont notre estimation
+            en direct tient compte.
           </p>
         </Reveal>
 
@@ -114,8 +114,8 @@ export function SunlightSection() {
         </div>
 
         <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-mist">
-          Répartition indicative à titre pédagogique. Le simulateur ci-dessus
-          affine cette estimation à partir de votre code postal précis.
+          Répartition indicative à titre pédagogique. Le panneau d&apos;estimation
+          ci-dessus affine ces chiffres à partir de votre code postal précis.
         </p>
       </div>
     </section>

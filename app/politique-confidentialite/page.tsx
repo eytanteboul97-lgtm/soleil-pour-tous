@@ -40,7 +40,7 @@ export default function PolitiqueConfidentialitePage() {
               Données collectées
             </h2>
             <p className="mt-3">
-              Dans le cadre du simulateur d&apos;éligibilité, nous collectons :
+              Dans le cadre du questionnaire d&apos;éligibilité, nous collectons :
               nom, prénom, adresse postale, adresse email, numéro de
               téléphone, revenu fiscal de référence, informations relatives à
               votre logement (type, statut d&apos;occupation, surface et

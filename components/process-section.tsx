@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { ClipboardCheck, FileBarChart2, UserCheck, Wrench } from "lucide-react";
 import { Reveal } from "@/components/reveal";
 
@@ -5,7 +8,7 @@ const STEPS = [
   {
     icon: ClipboardCheck,
     title: "Je teste mon éligibilité",
-    description: "Je remplis le simulateur en moins de 2 minutes.",
+    description: "Je réponds à quelques questions avec mon conseiller virtuel, en moins de 2 minutes.",
   },
   {
     icon: UserCheck,
@@ -37,15 +40,21 @@ export function ProcessSection() {
           </h2>
         </Reveal>
 
-        <div className="relative mt-16 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="absolute left-0 right-0 top-7 hidden h-px bg-line lg:block" />
+        <div className="relative mt-14 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <motion.div
+            className="absolute left-0 right-0 top-7 hidden h-px origin-left bg-gradient-to-r from-sun-400 via-sun-300 to-sun-400 lg:block"
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+          />
           {STEPS.map((step, i) => (
             <Reveal
               key={step.title}
-              delay={i * 0.1}
+              delay={i * 0.15}
               className="group relative flex flex-col items-center text-center"
             >
-              <span className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-sun-400 to-sun-600 text-white shadow-glow transition-transform duration-300 group-hover:scale-110">
+              <span className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-sun-400 to-sun-600 text-white shadow-glow transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_60px_-10px_rgba(255,138,30,0.6)]">
                 <step.icon className="h-6 w-6" aria-hidden="true" />
               </span>
               <span className="mt-4 font-display text-xs font-bold uppercase tracking-wide text-sun-700">

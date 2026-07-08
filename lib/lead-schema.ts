@@ -1,8 +1,12 @@
 import { z } from "zod";
 
 // French mobile/landline numbers, with or without spaces/dots, optional +33.
-const PHONE_REGEX = /^(?:\+33|0)[\s.-]?[1-9](?:[\s.-]?\d{2}){4}$/;
-const POSTAL_CODE_REGEX = /^\d{5}$/;
+export const PHONE_REGEX = /^(?:\+33|0)[\s.-]?[1-9](?:[\s.-]?\d{2}){4}$/;
+export const POSTAL_CODE_REGEX = /^\d{5}$/;
+// Vérification légère "a l'air valide" pour le retour instantané en direct —
+// volontairement plus permissive que le .email() de zod, qui reste la
+// validation faisant foi à la soumission.
+export const EMAIL_LOOKS_VALID_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const TYPE_TRAVAUX_VALUES = [
   "photovoltaique",

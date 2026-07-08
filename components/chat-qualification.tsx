@@ -18,13 +18,17 @@ import { Reveal } from "@/components/reveal";
 import { computeSimulation, getIncomeBand, regionLabel } from "@/lib/simulator";
 import { estimateReferenceMonthlyBill, estimateSavingsRate } from "@/lib/reference-bill";
 import { useAddressAutocomplete } from "@/lib/use-address-autocomplete";
+import { clearProgress, loadProgress, saveProgress } from "@/lib/form-persistence";
 import {
   leadFormSchema,
   type LeadFormValues,
   CIVILITE_LABELS,
   DISPONIBILITE_LABELS,
+  EMAIL_LOOKS_VALID_REGEX,
   NOMBRE_PERSONNES_LABELS,
   ORIENTATION_LABELS,
+  PHONE_REGEX,
+  POSTAL_CODE_REGEX,
   STATUT_LABELS,
   TYPE_CHAUFFAGE_LABELS,
   TYPE_LOGEMENT_LABELS,
@@ -129,12 +133,30 @@ function userSummary(screen: ScreenId, v: Partial<LeadFormValues>): string {
 
 const TYPING_DELAY = 550;
 
+function buildScreenOrder(wantsPhotovoltaique: boolean): ScreenId[] {
+  const order: ScreenId[] = [
+    "travaux",
+    "identity",
+    "contact",
+    "address",
+    "statut",
+    "logement",
+    "personnes",
+    "chauffage",
+    "facture",
+  ];
+  if (wantsPhotovoltaique) order.push("toiture");
+  order.push("revenu", "disponibilite", "consent");
+  return order;
+}
+
 export function ChatQualification() {
   const [completed, setCompleted] = useState<ScreenId[]>([]);
   const [currentScreen, setCurrentScreen] = useState<ScreenId | null>(null);
   const [showTyping, setShowTyping] = useState(true);
   const [phase, setPhase] = useState<"chat" | "analyzing" | "result">("chat");
   const [submitError, setSubmitError] = useState(false);
+  const [restoredNotice, setRestoredNotice] = useState(false);
   const pendingSubmit = useRef<Promise<void> | null>(null);
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
   const screenInputRef = useRef<HTMLDivElement>(null);
@@ -145,6 +167,7 @@ export function ChatQualification() {
     watch,
     trigger,
     getValues,
+    reset,
     formState: { errors },
   } = useForm<LeadFormValues>({
     resolver: zodResolver(leadFormSchema),
@@ -168,6 +191,21 @@ export function ChatQualification() {
   const values = watch();
   const wantsPhotovoltaique = (values.typeTravaux ?? []).includes("photovoltaique");
 
+  // Retour "champ valide" instantané, indépendant des erreurs (qui n'apparaissent
+  // qu'après avoir quitté le champ) — pure réassurance positive pendant la saisie.
+  const fieldValid = {
+    prenom: (values.prenom ?? "").trim().length >= 2,
+    nom: (values.nom ?? "").trim().length >= 2,
+    email: EMAIL_LOOKS_VALID_REGEX.test(values.email ?? ""),
+    telephone: PHONE_REGEX.test(values.telephone ?? ""),
+    adresse: (values.adresse ?? "").trim().length >= 5,
+    codePostal: POSTAL_CODE_REGEX.test(values.codePostal ?? ""),
+    ville: (values.ville ?? "").trim().length >= 2,
+    factureMensuelle: Number(values.factureMensuelle) > 0,
+    surfaceToiture: Number(values.surfaceToiture) > 0,
+    revenuFiscal: values.revenuFiscal !== "" && Number(values.revenuFiscal) >= 0,
+  };
+
   useEffect(() => {
     function handlePreselect(e: Event) {
       const key = (e as CustomEvent<LeadFormValues["typeTravaux"][number]>).detail;
@@ -181,23 +219,32 @@ export function ChatQualification() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const screenOrder = useMemo<ScreenId[]>(() => {
-    const order: ScreenId[] = [
-      "travaux",
-      "identity",
-      "contact",
-      "address",
-      "statut",
-      "logement",
-      "personnes",
-      "chauffage",
-      "facture",
-    ];
-    if (wantsPhotovoltaique) order.push("toiture");
-    order.push("revenu", "disponibilite", "consent");
-    return order;
+  useEffect(() => {
+    const saved = loadProgress<LeadFormValues, ScreenId>();
+    if (!saved) return;
+    const order = buildScreenOrder(saved.values.typeTravaux?.includes("photovoltaique") ?? false);
+    // Progression déjà terminée ou incohérente (schéma changé entre-temps) :
+    // on repart simplement sur un formulaire neuf plutôt que de risquer un
+    // état invalide.
+    if (saved.completed.length === 0 || saved.completed.length >= order.length) return;
+    reset(saved.values);
+    setCompleted(saved.completed);
+    setCurrentScreen(order[saved.completed.length]);
+    setShowTyping(false);
+    setRestoredNotice(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wantsPhotovoltaique]);
+  }, []);
+
+  useEffect(() => {
+    if (!restoredNotice) return;
+    const timeout = setTimeout(() => setRestoredNotice(false), 4000);
+    return () => clearTimeout(timeout);
+  }, [restoredNotice]);
+
+  const screenOrder = useMemo<ScreenId[]>(
+    () => buildScreenOrder(wantsPhotovoltaique),
+    [wantsPhotovoltaique]
+  );
 
   useEffect(() => {
     if (!showTyping) return;
@@ -214,6 +261,7 @@ export function ChatQualification() {
               body: JSON.stringify(finalValues),
             });
             if (!res.ok) setSubmitError(true);
+            else clearProgress();
           } catch {
             setSubmitError(true);
           }
@@ -260,9 +308,11 @@ export function ChatQualification() {
   async function goNext(screen: ScreenId) {
     const valid = await trigger(FIELDS_BY_SCREEN[screen]);
     if (!valid) return;
-    setCompleted((c) => [...c, screen]);
+    const nextCompleted = [...completed, screen];
+    setCompleted(nextCompleted);
     setCurrentScreen(null);
     setShowTyping(true);
+    saveProgress<LeadFormValues, ScreenId>({ completed: nextCompleted, values: getValues() });
   }
 
   function selectAndAdvance<K extends keyof LeadFormValues>(
@@ -385,7 +435,11 @@ export function ChatQualification() {
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_0%,rgba(6,11,23,0.4)_70%,#F7F8FC_100%)]" />
 
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-10 px-5 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
-        <Reveal>
+        {/* Contenu au-dessus de la ligne de flottaison, visible dès le
+            chargement sans scroll : jamais enveloppé dans <Reveal>, dont
+            l'opacité initiale à 0 pilotée par Framer Motion retardait le LCP
+            (le <h1> est l'élément LCP de la page) en attendant l'hydratation. */}
+        <div>
           <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-sun-300">
             <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
             Étude d&apos;éligibilité gratuite
@@ -420,6 +474,21 @@ export function ChatQualification() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
+                  <AnimatePresence>
+                    {restoredNotice && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                        animate={{ opacity: 1, height: "auto", marginBottom: 12 }}
+                        exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex items-center gap-2 overflow-hidden rounded-xl bg-leaf-500/10 px-3 py-2 text-xs font-medium text-leaf-600"
+                      >
+                        <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                        Nous avons retrouvé votre progression, reprenons où vous en étiez.
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <div className="mb-4">
                     <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-mist">
                       <span>
@@ -494,6 +563,7 @@ export function ChatQualification() {
                                 id="prenom"
                                 autoComplete="given-name"
                                 error={!!errors.prenom}
+                                valid={fieldValid.prenom}
                                 {...register("prenom")}
                               />
                             </div>
@@ -503,6 +573,7 @@ export function ChatQualification() {
                                 id="nom"
                                 autoComplete="family-name"
                                 error={!!errors.nom}
+                                valid={fieldValid.nom}
                                 {...register("nom")}
                               />
                             </div>
@@ -534,6 +605,7 @@ export function ChatQualification() {
                               autoComplete="email"
                               inputMode="email"
                               error={!!errors.email}
+                              valid={fieldValid.email}
                               {...register("email")}
                             />
                           </div>
@@ -546,6 +618,7 @@ export function ChatQualification() {
                               inputMode="tel"
                               placeholder="06 12 34 56 78"
                               error={!!errors.telephone}
+                              valid={fieldValid.telephone}
                               {...register("telephone")}
                             />
                           </div>
@@ -564,6 +637,7 @@ export function ChatQualification() {
                               autoComplete="off"
                               placeholder="Commencez à taper votre adresse…"
                               error={!!errors.adresse}
+                              valid={fieldValid.adresse}
                               {...register("adresse")}
                             />
                           </div>
@@ -574,6 +648,7 @@ export function ChatQualification() {
                               inputMode="numeric"
                               autoComplete="postal-code"
                               error={!!errors.codePostal}
+                              valid={fieldValid.codePostal}
                               {...register("codePostal")}
                             />
                           </div>
@@ -583,6 +658,7 @@ export function ChatQualification() {
                               id="ville"
                               autoComplete="address-level2"
                               error={!!errors.ville}
+                              valid={fieldValid.ville}
                               {...register("ville")}
                             />
                           </div>
@@ -636,6 +712,7 @@ export function ChatQualification() {
                               type="number"
                               inputMode="decimal"
                               error={!!errors.factureMensuelle}
+                              valid={fieldValid.factureMensuelle}
                               {...register("factureMensuelle")}
                             />
                           </div>
@@ -667,6 +744,7 @@ export function ChatQualification() {
                               type="number"
                               inputMode="decimal"
                               error={!!errors.surfaceToiture}
+                              valid={fieldValid.surfaceToiture}
                               {...register("surfaceToiture")}
                             />
                           </div>
@@ -702,6 +780,7 @@ export function ChatQualification() {
                               type="number"
                               inputMode="decimal"
                               error={!!errors.revenuFiscal}
+                              valid={fieldValid.revenuFiscal}
                               {...register("revenuFiscal")}
                             />
                           </div>
@@ -777,7 +856,12 @@ export function ChatQualification() {
                       ? `, avec une prise en charge estimée ${estimate.fundingRateLabel.toLowerCase()} selon le barème MaPrimeRénov' 2026`
                       : ""}
                     . Un conseiller Soleil Pour Tous vérifiera tout cela avec vous et
-                    vous recontactera {values.disponibiliteRappel ? DISPONIBILITE_LABELS[values.disponibiliteRappel].toLowerCase() : "rapidement"} pour confirmer votre éligibilité.
+                    vous recontactera pour confirmer votre éligibilité, sur le
+                    créneau que vous avez choisi
+                    {values.disponibiliteRappel
+                      ? ` (${DISPONIBILITE_LABELS[values.disponibiliteRappel].toLowerCase()})`
+                      : ""}
+                    .
                   </p>
                   {submitError && (
                     <p className="mt-4 text-sm font-medium text-red-500">
@@ -799,7 +883,7 @@ export function ChatQualification() {
               Gratuit, rapide, sans engagement — aides accordées selon éligibilité.
             </p>
           </div>
-        </Reveal>
+        </div>
 
         <Reveal delay={0.1} className="lg:sticky lg:top-24">
           <LiveEstimatePanel
