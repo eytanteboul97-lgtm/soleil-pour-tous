@@ -5,8 +5,8 @@ en France. Site marketing haute conversion : simulateur d'éligibilité,
 formulaire de lead multi-étapes, tableau des aides disponibles, simulateur
 d'économies, FAQ.
 
-Ce projet est indépendant du site sefa.is présent à la racine de ce repo —
-identité de marque, palette et composants distincts.
+Ce projet vit dans son propre repo, entièrement indépendant du site sefa.is
+(identité de marque, palette et composants distincts).
 
 ## Stack
 
@@ -59,10 +59,11 @@ Apps Script, un webhook Zapier/Make...).
 
 ## Déploiement (Netlify)
 
-Ce dossier contient son propre `netlify.toml`. Si ce site est déployé comme
-un site Netlify séparé du site sefa.is racine, configurer le champ **Base
-directory** du site Netlify sur `soleil-pour-tous` pour que ce fichier de
-config et ce `package.json` soient pris en compte.
+Le repo contient un `netlify.toml` à la racine (`npm run build` +
+`@netlify/plugin-nextjs`). Sur Netlify : **Add new site → Import an existing
+project** → sélectionner ce repo. Aucun champ "Base directory" ou "Publish
+directory" à renseigner — laisser les réglages par défaut, tout est déjà à
+la racine.
 
 ## Contenu légal
 
