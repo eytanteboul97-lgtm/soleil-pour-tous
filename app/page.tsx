@@ -1,9 +1,7 @@
 import { Navbar } from "@/components/navbar";
-import { Hero } from "@/components/hero";
+import { ChatQualification } from "@/components/chat-qualification";
 import { TrustSection } from "@/components/trust-section";
 import { SolutionsSection } from "@/components/solutions-section";
-import { Simulator } from "@/components/simulator";
-import { ChatQualification } from "@/components/chat-qualification";
 import { AidesTable } from "@/components/aides-table";
 import { SunlightSection } from "@/components/sunlight-section";
 import { ProcessSection } from "@/components/process-section";
@@ -17,11 +15,9 @@ export default function Home() {
     <>
       <Navbar />
       <main>
-        <Hero />
+        <ChatQualification />
         <TrustSection />
         <SolutionsSection />
-        <Simulator />
-        <ChatQualification />
         <AidesTable />
         <SunlightSection />
         <ProcessSection />

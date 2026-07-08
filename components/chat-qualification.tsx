@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -308,15 +308,49 @@ export function ChatQualification() {
   ]);
 
   return (
-    <section id="eligibilite" className="anchor-offset relative bg-paper py-20 sm:py-28">
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-5 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+    <section
+      id="eligibilite"
+      className="anchor-offset relative overflow-hidden bg-night pb-20 pt-28 sm:pb-28 sm:pt-36"
+    >
+      <div className="pointer-events-none absolute inset-0 bg-mesh-night" />
+      <motion.div
+        className="pointer-events-none absolute -left-1/4 top-0 h-[600px] w-[600px] rounded-full bg-sun-radial opacity-[0.07] blur-3xl"
+        animate={{ x: [0, 40, 0], y: [0, 30, 0] }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="pointer-events-none absolute -right-1/4 bottom-0 h-[500px] w-[500px] rounded-full bg-volt-500/10 blur-3xl"
+        animate={{ x: [0, -30, 0], y: [0, -40, 0] }}
+        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_0%,rgba(6,11,23,0.4)_70%,#F7F8FC_100%)]" />
+
+      <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-10 px-5 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
         <Reveal>
-          <span className="text-sm font-semibold uppercase tracking-wide text-sun-700">
-            Votre conseiller travaux
+          <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-sun-300">
+            <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+            Étude d&apos;éligibilité gratuite
           </span>
-          <h2 className="mt-3 font-display text-3xl font-bold text-ink sm:text-4xl">
-            Découvrons ensemble votre éligibilité
-          </h2>
+
+          <h1 className="font-display text-3xl font-bold leading-[1.1] text-white sm:text-4xl lg:text-[2.75rem]">
+            Passez au solaire et{" "}
+            <span className="text-gradient-sun">réduisez vos factures</span>{" "}
+            d&apos;électricité
+          </h1>
+
+          <p className="mt-4 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
+            Discutez avec votre conseiller travaux et découvrez en 2 minutes
+            votre éligibilité aux aides disponibles.
+          </p>
+
+          <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
+            {["Gratuit", "2 minutes", "Sans engagement", "Analyse personnalisée"].map((label) => (
+              <li key={label} className="flex items-center gap-1.5 text-sm text-white/60">
+                <Check className="h-3.5 w-3.5 text-leaf-400" aria-hidden="true" />
+                {label}
+              </li>
+            ))}
+          </ul>
 
           <div className="mt-8 min-h-[480px] rounded-3xl bg-white p-5 shadow-card sm:p-7">
             <AnimatePresence mode="wait">

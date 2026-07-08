@@ -6,32 +6,22 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function StickyMobileCTA() {
-  const [pastHero, setPastHero] = useState(false);
-  const [formVisible, setFormVisible] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const hero = document.getElementById("hero");
     const form = document.getElementById("eligibilite");
-    if (!hero || !form) return;
+    if (!form) return;
 
-    const heroObserver = new IntersectionObserver(
-      ([entry]) => setPastHero(!entry.isIntersecting),
-      { threshold: 0 }
-    );
+    // The chat is now the first section on the page, so the sticky CTA
+    // only needs to appear once the visitor has scrolled past it.
     const formObserver = new IntersectionObserver(
-      ([entry]) => setFormVisible(entry.isIntersecting),
-      { threshold: 0.3 }
+      ([entry]) => setVisible(!entry.isIntersecting),
+      { threshold: 0.15 }
     );
 
-    heroObserver.observe(hero);
     formObserver.observe(form);
-    return () => {
-      heroObserver.disconnect();
-      formObserver.disconnect();
-    };
+    return () => formObserver.disconnect();
   }, []);
-
-  const visible = pastHero && !formVisible;
 
   return (
     <AnimatePresence>
