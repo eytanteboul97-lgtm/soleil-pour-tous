@@ -16,8 +16,8 @@ export function TrustSection() {
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
           {ITEMS.map((item, i) => (
             <Reveal key={item.label} delay={i * 0.05} className="flex flex-col items-center text-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-card-sm text-sun-600">
-                <item.icon className="h-6 w-6" />
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-card-sm text-sun-700">
+                <item.icon className="h-6 w-6" aria-hidden="true" />
               </span>
               <p className="mt-3 text-sm font-medium text-ink-soft">{item.label}</p>
             </Reveal>

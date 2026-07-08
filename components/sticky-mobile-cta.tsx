@@ -6,38 +6,32 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function StickyMobileCTA() {
-  const [visible, setVisible] = useState(false);
+  const [pastHero, setPastHero] = useState(false);
+  const [formVisible, setFormVisible] = useState(false);
 
   useEffect(() => {
-    const heroHeight = window.innerHeight * 0.8;
-    const target = document.getElementById("eligibilite");
+    const hero = document.getElementById("hero");
+    const form = document.getElementById("eligibilite");
+    if (!hero || !form) return;
 
-    const onScroll = () => {
-      setVisible((prev) => {
-        if (window.scrollY < heroHeight) return false;
-        return prev;
-      });
-      if (window.scrollY >= heroHeight) setVisible(true);
-    };
+    const heroObserver = new IntersectionObserver(
+      ([entry]) => setPastHero(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    const formObserver = new IntersectionObserver(
+      ([entry]) => setFormVisible(entry.isIntersecting),
+      { threshold: 0.3 }
+    );
 
-    let observer: IntersectionObserver | undefined;
-    if (target) {
-      observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) setVisible(false);
-          else if (window.scrollY >= heroHeight) setVisible(true);
-        },
-        { threshold: 0.3 }
-      );
-      observer.observe(target);
-    }
-
-    window.addEventListener("scroll", onScroll, { passive: true });
+    heroObserver.observe(hero);
+    formObserver.observe(form);
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      observer?.disconnect();
+      heroObserver.disconnect();
+      formObserver.disconnect();
     };
   }, []);
+
+  const visible = pastHero && !formVisible;
 
   return (
     <AnimatePresence>
@@ -56,7 +50,7 @@ export function StickyMobileCTA() {
             }
           >
             Tester mon éligibilité
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Button>
         </motion.div>
       )}

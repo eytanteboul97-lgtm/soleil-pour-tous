@@ -9,7 +9,7 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-2 font-display text-lg font-bold text-white">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sun-400 to-sun-600">
-                <Sun className="h-5 w-5 text-white" strokeWidth={2.5} />
+                <Sun className="h-5 w-5 text-white" strokeWidth={2.5} aria-hidden="true" />
               </span>
               Soleil Pour Tous
             </div>
@@ -32,7 +32,7 @@ export function Footer() {
           </nav>
         </div>
 
-        <div className="mt-12 space-y-3 border-t border-white/10 pt-8 text-xs leading-relaxed text-white/40">
+        <div className="mt-12 space-y-3 border-t border-white/10 pt-8 text-xs leading-relaxed text-white/60">
           <p>
             Soleil Pour Tous ne garantit aucune aide sans validation complète
             du dossier. Les informations relatives aux aides sont données à

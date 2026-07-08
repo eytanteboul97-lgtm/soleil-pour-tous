@@ -11,7 +11,7 @@ function scrollToId(id: string) {
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-night pb-24 pt-32 sm:pb-32 sm:pt-40">
+    <section id="hero" className="relative overflow-hidden bg-night pb-24 pt-32 sm:pb-32 sm:pt-40">
       <div className="pointer-events-none absolute inset-0 bg-mesh-night" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_0%,rgba(6,11,23,0.4)_70%,#F7F8FC_100%)]" />
 
@@ -22,7 +22,7 @@ export function Hero() {
           transition={{ duration: 0.7 }}
         >
           <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-sun-300">
-            <ShieldCheck className="h-3.5 w-3.5" />
+            <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
             Étude d&apos;éligibilité gratuite
           </span>
 
@@ -41,7 +41,7 @@ export function Hero() {
           <div className="mt-9 flex flex-col gap-4 sm:flex-row">
             <Button size="lg" onClick={() => scrollToId("eligibilite")}>
               Tester mon éligibilité
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Button>
             <Button
               size="lg"

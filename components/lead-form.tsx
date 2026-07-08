@@ -300,7 +300,7 @@ export function LeadForm() {
         <div className="mt-8 flex items-center justify-between gap-4">
           {step > 0 ? (
             <Button type="button" variant="outline" onClick={handleBack}>
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Retour
             </Button>
           ) : (
@@ -309,13 +309,13 @@ export function LeadForm() {
 
           <Button type="submit" disabled={submitting}>
             {submitting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             ) : isLastStep ? (
               "Envoyer ma demande"
             ) : (
               <>
                 Continuer
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </>
             )}
           </Button>
@@ -323,7 +323,7 @@ export function LeadForm() {
       </form>
 
       <p className="mt-6 flex items-center justify-center gap-2 text-xs text-mist">
-        <ShieldCheck className="h-4 w-4 text-leaf-600" />
+        <ShieldCheck className="h-4 w-4 text-leaf-600" aria-hidden="true" />
         Gratuit, rapide, sans engagement — aides accordées selon éligibilité.
       </p>
     </div>
@@ -340,16 +340,17 @@ export function LeadFormSection() {
     <section id="eligibilite" className="anchor-offset relative bg-paper py-20 sm:py-28">
       <div className="mx-auto grid max-w-6xl grid-cols-1 items-start gap-14 px-5 sm:px-8 lg:grid-cols-[0.9fr_1.1fr]">
         <Reveal>
-          <span className="text-sm font-semibold uppercase tracking-wide text-sun-600">
+          <span className="text-sm font-semibold uppercase tracking-wide text-sun-700">
             Simulateur d&apos;éligibilité
           </span>
           <h2 className="mt-3 font-display text-3xl font-bold text-ink sm:text-4xl">
             Découvrez si votre foyer est éligible aux aides solaires
           </h2>
           <p className="mt-5 text-lg leading-relaxed text-mist">
-            En 2 minutes, un conseiller Soleil Pour Tous analyse votre profil
-            et vous recontacte pour vous proposer une étude personnalisée et
-            100% gratuite — sans engagement de votre part.
+            Remplissez le formulaire en 2 minutes : un conseiller Soleil Pour
+            Tous analyse ensuite votre profil et vous recontacte pour vous
+            proposer une étude personnalisée et 100% gratuite — sans
+            engagement de votre part.
           </p>
           <ul className="mt-8 space-y-4 text-sm text-ink-soft">
             {[
@@ -359,7 +360,7 @@ export function LeadFormSection() {
             ].map((item) => (
               <li key={item} className="flex items-center gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-leaf-500/10 text-leaf-600">
-                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
                 </span>
                 {item}
               </li>

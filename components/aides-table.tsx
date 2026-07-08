@@ -50,7 +50,7 @@ export function AidesTable() {
     <section id="aides" className="anchor-offset bg-white py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="text-sm font-semibold uppercase tracking-wide text-sun-600">
+          <span className="text-sm font-semibold uppercase tracking-wide text-sun-700">
             Cadre légal
           </span>
           <h2 className="mt-3 font-display text-3xl font-bold text-ink sm:text-4xl">
@@ -110,7 +110,7 @@ export function AidesTable() {
           delay={0.15}
           className="mt-6 flex items-start gap-3 rounded-2xl bg-sun-50 p-5 text-sm text-sun-700"
         >
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
           <p>
             Les aides évoluent régulièrement. Les informations présentées sont
             données à titre indicatif et doivent être confirmées lors de

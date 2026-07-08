@@ -12,7 +12,7 @@ export function LeadFormSuccess() {
       className="flex flex-col items-center rounded-3xl bg-white p-10 text-center shadow-card"
     >
       <span className="flex h-16 w-16 items-center justify-center rounded-full bg-leaf-500/10 text-leaf-600">
-        <CheckCircle2 className="h-9 w-9" />
+        <CheckCircle2 className="h-9 w-9" aria-hidden="true" />
       </span>
       <h3 className="mt-6 font-display text-2xl font-bold text-ink">
         Merci, votre demande a bien été envoyée.

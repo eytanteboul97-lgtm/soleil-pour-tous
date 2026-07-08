@@ -44,7 +44,7 @@ const config: Config = {
           DEFAULT: "#0B1226",
           soft: "#374056",
         },
-        mist: "#6B7488",
+        mist: "#545C70",
         line: "#E5E8F0",
       },
       fontFamily: {

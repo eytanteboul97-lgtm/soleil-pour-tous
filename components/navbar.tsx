@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, Sun, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ const links = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -31,6 +32,18 @@ export function Navbar() {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
   return (
     <header
       className={cn(
@@ -42,7 +55,10 @@ export function Navbar() {
     >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
         <a href="#" className="flex items-center gap-2 font-display text-lg font-bold text-white">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sun-400 to-sun-600 shadow-glow">
+          <span
+            aria-hidden="true"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sun-400 to-sun-600 shadow-glow"
+          >
             <Sun className="h-5 w-5 text-white" strokeWidth={2.5} />
           </span>
           Soleil Pour Tous
@@ -67,18 +83,21 @@ export function Navbar() {
         </div>
 
         <button
+          ref={menuButtonRef}
           aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
           aria-expanded={open}
+          aria-controls="mobile-menu"
           className="grid h-10 w-10 place-items-center rounded-full text-white md:hidden"
           onClick={() => setOpen((v) => !v)}
         >
-          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {open ? <X className="h-6 w-6" aria-hidden="true" /> : <Menu className="h-6 w-6" aria-hidden="true" />}
         </button>
       </nav>
 
       <AnimatePresence>
         {open && (
           <motion.div
+            id="mobile-menu"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}

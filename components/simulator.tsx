@@ -13,6 +13,7 @@ function scrollToId(id: string) {
 }
 
 function SliderField({
+  id,
   label,
   value,
   onChange,
@@ -21,6 +22,7 @@ function SliderField({
   step,
   suffix,
 }: {
+  id: string;
   label: string;
   value: number;
   onChange: (v: number) => void;
@@ -32,18 +34,22 @@ function SliderField({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between text-sm">
-        <span className="font-medium text-white/80">{label}</span>
-        <span className="font-display font-semibold text-sun-300">
+        <label htmlFor={id} className="font-medium text-white/80">
+          {label}
+        </label>
+        <span aria-hidden="true" className="font-display font-semibold text-sun-300">
           {value.toLocaleString("fr-FR")} {suffix}
         </span>
       </div>
       <input
+        id={id}
         type="range"
         min={min}
         max={max}
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
+        aria-valuetext={`${value.toLocaleString("fr-FR")} ${suffix}`}
         className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-sun-500"
       />
     </div>
@@ -93,6 +99,7 @@ export function Simulator() {
           <div className="glass rounded-3xl p-7 sm:p-9">
             <div className="space-y-7">
               <SliderField
+                id="sim-facture"
                 label="Facture d'électricité mensuelle"
                 value={monthlyBill}
                 onChange={setMonthlyBill}
@@ -102,6 +109,7 @@ export function Simulator() {
                 suffix="€"
               />
               <SliderField
+                id="sim-surface"
                 label="Surface approximative de toiture"
                 value={roofSurface}
                 onChange={setRoofSurface}
@@ -111,6 +119,7 @@ export function Simulator() {
                 suffix="m²"
               />
               <SliderField
+                id="sim-revenu"
                 label="Revenu fiscal de référence"
                 value={taxIncome}
                 onChange={setTaxIncome}
@@ -144,7 +153,7 @@ export function Simulator() {
           >
             <div className="grid grid-cols-2 gap-5">
               <div className="rounded-2xl bg-white/5 p-5">
-                <PiggyBank className="h-5 w-5 text-sun-300" />
+                <PiggyBank className="h-5 w-5 text-sun-300" aria-hidden="true" />
                 <p className="mt-3 font-display text-3xl font-bold text-white">
                   {animatedSavings.toLocaleString("fr-FR")} €
                 </p>
@@ -153,7 +162,7 @@ export function Simulator() {
                 </p>
               </div>
               <div className="rounded-2xl bg-white/5 p-5">
-                <Gauge className="h-5 w-5 text-volt-400" />
+                <Gauge className="h-5 w-5 text-volt-400" aria-hidden="true" />
                 <p className="mt-3 font-display text-3xl font-bold text-white">
                   {(animatedKwc / 10).toFixed(1)} kWc
                 </p>
@@ -164,7 +173,7 @@ export function Simulator() {
             </div>
 
             <div className="mt-5 flex items-start gap-3 rounded-2xl bg-white/5 p-5">
-              <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-sun-300" />
+              <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-sun-300" aria-hidden="true" />
               <div>
                 <p className="font-display text-sm font-semibold text-white">
                   {result.eligibilityLabel}
@@ -175,10 +184,10 @@ export function Simulator() {
 
             <Button className="mt-6 w-full" onClick={() => scrollToId("eligibilite")}>
               Recevoir mon étude gratuite
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Button>
 
-            <p className="mt-4 text-center text-xs text-white/40">
+            <p className="mt-4 text-center text-xs text-white/60">
               Estimation indicative, non contractuelle.
             </p>
           </div>

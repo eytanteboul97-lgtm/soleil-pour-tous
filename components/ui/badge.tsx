@@ -8,7 +8,7 @@ const badgeVariants = cva(
     variants: {
       variant: {
         available: "bg-leaf-500/10 text-leaf-600",
-        conditional: "bg-sun-500/10 text-sun-600",
+        conditional: "bg-sun-500/10 text-sun-700",
         unavailable: "bg-mist/10 text-mist",
         volt: "bg-volt-500/10 text-volt-600",
       },

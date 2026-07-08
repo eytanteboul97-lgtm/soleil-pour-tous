@@ -63,25 +63,25 @@ export function HeroVisual() {
       </div>
 
       <FloatingCard
-        icon={<TrendingUp className="h-4 w-4" />}
+        icon={<TrendingUp className="h-4 w-4" aria-hidden="true" />}
         label="Économies"
         className="left-[-6%] top-[14%]"
         delay={0}
       />
       <FloatingCard
-        icon={<HandCoins className="h-4 w-4" />}
+        icon={<HandCoins className="h-4 w-4" aria-hidden="true" />}
         label="Aides"
         className="right-[-4%] top-[38%]"
         delay={0.6}
       />
       <FloatingCard
-        icon={<Zap className="h-4 w-4" />}
+        icon={<Zap className="h-4 w-4" aria-hidden="true" />}
         label="Revente surplus"
         className="left-[-8%] bottom-[22%]"
         delay={1.2}
       />
       <FloatingCard
-        icon={<ClipboardCheck className="h-4 w-4" />}
+        icon={<ClipboardCheck className="h-4 w-4" aria-hidden="true" />}
         label="Étude gratuite"
         className="right-[2%] bottom-[4%]"
         delay={1.8}

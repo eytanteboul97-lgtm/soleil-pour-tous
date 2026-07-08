@@ -49,7 +49,7 @@ export function FAQ() {
     <section id="faq" className="anchor-offset bg-paper py-20 sm:py-28">
       <div className="mx-auto max-w-3xl px-5 sm:px-8">
         <Reveal className="text-center">
-          <span className="text-sm font-semibold uppercase tracking-wide text-sun-600">
+          <span className="text-sm font-semibold uppercase tracking-wide text-sun-700">
             Questions fréquentes
           </span>
           <h2 className="mt-3 font-display text-3xl font-bold text-ink sm:text-4xl">
