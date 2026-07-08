@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Check, Loader2 } from "lucide-react";
 import { Logomark } from "@/components/logomark";
+import { cn } from "@/lib/utils";
 
 const STEPS = [
   "Vérification de votre éligibilité",
@@ -49,14 +50,14 @@ export function AnalyzingSequence({ onComplete }: { onComplete: () => void }) {
           return (
             <li key={step} className="flex items-center gap-3">
               <span
-                className={
-                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs " +
-                  (done
+                className={cn(
+                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs",
+                  done
                     ? "bg-leaf-500/15 text-leaf-600"
                     : active
-                      ? "bg-sun-500/15 text-sun-600"
-                      : "bg-line text-mist")
-                }
+                      ? "bg-sun-500/15 text-sun-700"
+                      : "bg-line text-mist"
+                )}
               >
                 {done ? (
                   <Check className="h-3.5 w-3.5" aria-hidden="true" />
@@ -64,7 +65,7 @@ export function AnalyzingSequence({ onComplete }: { onComplete: () => void }) {
                   <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
                 ) : null}
               </span>
-              <span className={done || active ? "text-sm text-ink-soft" : "text-sm text-mist/60"}>
+              <span className={cn("text-sm", done || active ? "text-ink-soft" : "text-mist/60")}>
                 {step}
               </span>
             </li>

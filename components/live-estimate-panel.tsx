@@ -70,7 +70,10 @@ export function LiveEstimatePanel({
   const savings = useAnimatedNumber(estimate.estimatedAnnualSavings ?? 0, 600);
 
   return (
-    <div className={cn("rounded-3xl bg-gradient-to-br from-night-raised to-night p-6 shadow-glow", className)}>
+    <div
+      aria-live="polite"
+      className={cn("rounded-3xl bg-gradient-to-br from-night-raised to-night p-6 shadow-glow", className)}
+    >
       <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-white/40">
         Votre profil, en direct
       </p>

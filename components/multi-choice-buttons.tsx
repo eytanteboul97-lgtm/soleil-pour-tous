@@ -21,6 +21,8 @@ export function MultiChoiceButtons<T extends string>({
           <motion.button
             key={option.value}
             type="button"
+            role="checkbox"
+            aria-checked={selected}
             whileTap={{ scale: 0.97 }}
             onClick={() => onToggle(option.value)}
             className={cn(

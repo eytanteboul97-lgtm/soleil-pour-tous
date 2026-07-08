@@ -131,7 +131,8 @@ export function ChatQualification() {
   const [phase, setPhase] = useState<"chat" | "analyzing" | "result">("chat");
   const [submitError, setSubmitError] = useState(false);
   const pendingSubmit = useRef<Promise<void> | null>(null);
-  const transcriptEndRef = useRef<HTMLDivElement>(null);
+  const transcriptContainerRef = useRef<HTMLDivElement>(null);
+  const screenInputRef = useRef<HTMLDivElement>(null);
 
   const {
     register,
@@ -222,8 +223,21 @@ export function ChatQualification() {
   }, [showTyping, completed, screenOrder]);
 
   useEffect(() => {
-    transcriptEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    // Scroll only the transcript's own overflow container — never the page.
+    // scrollIntoView on a nested marker would otherwise drag the whole
+    // viewport down on mount, breaking any #anchor navigation to the page.
+    const container = transcriptContainerRef.current;
+    if (!container) return;
+    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
   }, [completed, currentScreen, showTyping]);
+
+  useEffect(() => {
+    if (showTyping || !currentScreen) return;
+    const focusable = screenInputRef.current?.querySelector<HTMLElement>(
+      "input, button, [tabindex]"
+    );
+    focusable?.focus({ preventScroll: true });
+  }, [currentScreen, showTyping]);
 
   async function goNext(screen: ScreenId) {
     const valid = await trigger(FIELDS_BY_SCREEN[screen]);
@@ -304,7 +318,7 @@ export function ChatQualification() {
             Découvrons ensemble votre éligibilité
           </h2>
 
-          <div className="mt-8 rounded-3xl bg-white p-5 shadow-card sm:p-7">
+          <div className="mt-8 min-h-[480px] rounded-3xl bg-white p-5 shadow-card sm:p-7">
             <AnimatePresence mode="wait">
               {phase === "chat" && (
                 <motion.div
@@ -323,7 +337,10 @@ export function ChatQualification() {
                     />
                   </div>
 
-                  <div className="max-h-[420px] space-y-4 overflow-y-auto py-2 pr-1">
+                  <div
+                    ref={transcriptContainerRef}
+                    className="max-h-[420px] space-y-4 overflow-y-auto py-2 pr-1"
+                  >
                     {completed.map((screen) => (
                       <div key={screen} className="space-y-3">
                         <AdvisorBubble>{assistantMessage(screen, values)}</AdvisorBubble>
@@ -336,11 +353,10 @@ export function ChatQualification() {
                     )}
 
                     {showTyping && <TypingIndicator />}
-                    <div ref={transcriptEndRef} />
                   </div>
 
                   {!showTyping && currentScreen && (
-                    <div className="mt-4 border-t border-line pt-5">
+                    <div ref={screenInputRef} className="mt-4 border-t border-line pt-5">
                       {currentScreen === "travaux" && (
                         <div className="space-y-4">
                           <MultiChoiceButtons

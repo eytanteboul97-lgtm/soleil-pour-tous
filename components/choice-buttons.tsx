@@ -20,6 +20,7 @@ export function ChoiceButtons<T extends string>({
           <motion.button
             key={option.value}
             type="button"
+            aria-pressed={selected}
             whileTap={{ scale: 0.96 }}
             onClick={() => onSelect(option.value)}
             className={cn(

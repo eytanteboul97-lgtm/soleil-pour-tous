@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter } from "next/font/google";
 import { MotionConfig } from "framer-motion";
+import { HashScrollFix } from "@/components/hash-scroll-fix";
 import "./globals.css";
 
 const display = Space_Grotesk({
@@ -91,6 +92,7 @@ export default function RootLayout({
       </head>
       <body>
         <MotionConfig reducedMotion="user">{children}</MotionConfig>
+        <HashScrollFix />
       </body>
     </html>
   );
