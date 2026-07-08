@@ -184,7 +184,7 @@ export function Simulator() {
 
             <Button className="mt-6 w-full" onClick={() => scrollToId("eligibilite")}>
               Recevoir mon étude gratuite
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
             </Button>
 
             <p className="mt-4 text-center text-xs text-white/60">

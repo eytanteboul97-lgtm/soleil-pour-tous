@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sun } from "lucide-react";
+import { Logo } from "@/components/logo";
 
 export function Footer() {
   return (
@@ -7,12 +7,7 @@ export function Footer() {
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex items-center gap-2 font-display text-lg font-bold text-white">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sun-400 to-sun-600">
-                <Sun className="h-5 w-5 text-white" strokeWidth={2.5} aria-hidden="true" />
-              </span>
-              Soleil Pour Tous
-            </div>
+            <Logo />
             <p className="mt-4 max-w-xs text-sm leading-relaxed">
               Étude d&apos;éligibilité gratuite pour l&apos;installation de
               panneaux photovoltaïques en France.

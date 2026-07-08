@@ -315,7 +315,7 @@ export function LeadForm() {
             ) : (
               <>
                 Continuer
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
               </>
             )}
           </Button>

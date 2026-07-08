@@ -40,8 +40,12 @@ export function ProcessSection() {
         <div className="relative mt-16 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="absolute left-0 right-0 top-7 hidden h-px bg-line lg:block" />
           {STEPS.map((step, i) => (
-            <Reveal key={step.title} delay={i * 0.1} className="relative flex flex-col items-center text-center">
-              <span className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-sun-400 to-sun-600 text-white shadow-glow">
+            <Reveal
+              key={step.title}
+              delay={i * 0.1}
+              className="group relative flex flex-col items-center text-center"
+            >
+              <span className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-sun-400 to-sun-600 text-white shadow-glow transition-transform duration-300 group-hover:scale-110">
                 <step.icon className="h-6 w-6" aria-hidden="true" />
               </span>
               <span className="mt-4 font-display text-xs font-bold uppercase tracking-wide text-sun-700">

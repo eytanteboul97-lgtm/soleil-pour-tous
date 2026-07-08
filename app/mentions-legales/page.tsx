@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Logo } from "@/components/logo";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
@@ -10,8 +11,12 @@ export const metadata: Metadata = {
 export default function MentionsLegalesPage() {
   return (
     <>
+      <header className="border-b border-line px-5 py-5 sm:px-8">
+        <Logo theme="light" className="mx-auto max-w-3xl" />
+      </header>
+
       <main className="mx-auto max-w-3xl px-5 py-24 sm:px-8">
-        <Link href="/" className="text-sm font-medium text-sun-600 hover:underline">
+        <Link href="/" className="text-sm font-medium text-sun-700 hover:underline">
           ← Retour à l&apos;accueil
         </Link>
 

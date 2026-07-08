@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, Sun, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -54,15 +55,7 @@ export function Navbar() {
       )}
     >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
-        <a href="#" className="flex items-center gap-2 font-display text-lg font-bold text-white">
-          <span
-            aria-hidden="true"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sun-400 to-sun-600 shadow-glow"
-          >
-            <Sun className="h-5 w-5 text-white" strokeWidth={2.5} />
-          </span>
-          Soleil Pour Tous
-        </a>
+        <Logo reactToScroll />
 
         <div className="hidden items-center gap-8 md:flex">
           {links.map((link) => (

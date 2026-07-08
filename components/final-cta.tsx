@@ -23,7 +23,7 @@ export function FinalCTA() {
         </p>
         <Button size="lg" className="mt-9" onClick={() => scrollToId("eligibilite")}>
           Faire mon étude gratuite
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
         </Button>
       </Reveal>
     </section>

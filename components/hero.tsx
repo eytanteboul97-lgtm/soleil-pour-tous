@@ -41,7 +41,7 @@ export function Hero() {
           <div className="mt-9 flex flex-col gap-4 sm:flex-row">
             <Button size="lg" onClick={() => scrollToId("eligibilite")}>
               Tester mon éligibilité
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
             </Button>
             <Button
               size="lg"

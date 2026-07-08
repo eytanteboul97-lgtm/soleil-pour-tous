@@ -26,12 +26,25 @@ export default async function OpengraphImage() {
               display: "flex",
               width: 76,
               height: 76,
-              borderRadius: "9999px",
-              background: "linear-gradient(135deg, #FFA51E, #F2680A)",
+              borderRadius: 20,
+              backgroundColor: "#111C34",
+              border: "1px solid rgba(255,255,255,0.1)",
             }}
-          />
-          <div style={{ display: "flex", color: "#FFA51E", fontSize: 34, fontWeight: 700 }}>
-            Soleil Pour Tous
+          >
+            <svg viewBox="0 0 48 48" width="76" height="76">
+              <line x1="24" y1="17" x2="24" y2="6" stroke="#FFA51E" strokeWidth="6.5" strokeLinecap="round" />
+              <line x1="30.06" y1="20.5" x2="39.59" y2="15" stroke="#FFFFFF" strokeWidth="6.5" strokeLinecap="round" />
+              <line x1="30.06" y1="27.5" x2="39.59" y2="33" stroke="#FFFFFF" strokeWidth="6.5" strokeLinecap="round" />
+              <line x1="24" y1="31" x2="24" y2="42" stroke="#FFFFFF" strokeWidth="6.5" strokeLinecap="round" />
+              <line x1="17.94" y1="27.5" x2="8.41" y2="33" stroke="#FFFFFF" strokeWidth="6.5" strokeLinecap="round" />
+              <line x1="17.94" y1="20.5" x2="8.41" y2="15" stroke="#FFFFFF" strokeWidth="6.5" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div style={{ display: "flex", fontSize: 34, fontWeight: 700 }}>
+            <span style={{ color: "#ffffff" }}>Soleil</span>
+            <span style={{ color: "rgba(255,255,255,0.7)", marginLeft: 10, fontWeight: 500 }}>
+              Pour Tous
+            </span>
           </div>
         </div>
         <div
