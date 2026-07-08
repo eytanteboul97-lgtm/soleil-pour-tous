@@ -1,5 +1,6 @@
 import type { LeadFormValues } from "@/lib/lead-schema";
 import {
+  CIVILITE_LABELS,
   DISPONIBILITE_LABELS,
   NOMBRE_PERSONNES_LABELS,
   ORIENTATION_LABELS,
@@ -49,6 +50,7 @@ export function buildLeadEmailHtml(lead: LeadFormValues, receivedAt: Date) {
     <table style="width:100%;border-collapse:collapse;border:1px solid #E5E8F0;border-top:none;">
       <tbody>
         ${row("Travaux souhaités", lead.typeTravaux.map((t) => TYPE_TRAVAUX_LABELS[t]).join(", "))}
+        ${lead.civilite ? row("Civilité", CIVILITE_LABELS[lead.civilite]) : ""}
         ${row("Prénom", lead.prenom)}
         ${row("Nom", lead.nom)}
         ${row("Email", lead.email)}

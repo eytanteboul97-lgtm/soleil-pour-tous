@@ -19,6 +19,7 @@ import { computeSimulation, getIncomeBand, regionLabel } from "@/lib/simulator";
 import {
   leadFormSchema,
   type LeadFormValues,
+  CIVILITE_LABELS,
   DISPONIBILITE_LABELS,
   NOMBRE_PERSONNES_LABELS,
   ORIENTATION_LABELS,
@@ -95,8 +96,10 @@ function userSummary(screen: ScreenId, v: Partial<LeadFormValues>): string {
   switch (screen) {
     case "travaux":
       return (v.typeTravaux ?? []).map((t) => TYPE_TRAVAUX_LABELS[t]).join(", ");
-    case "identity":
-      return `${v.prenom ?? ""} ${v.nom ?? ""}`.trim();
+    case "identity": {
+      const title = v.civilite ? `${CIVILITE_LABELS[v.civilite]} ` : "";
+      return `${title}${v.prenom ?? ""} ${v.nom ?? ""}`.trim();
+    }
     case "contact":
       return `${v.email ?? ""} · ${v.telephone ?? ""}`;
     case "address":
@@ -372,14 +375,29 @@ export function ChatQualification() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-line">
-                    <motion.div
-                      className="h-full rounded-full bg-gradient-to-r from-sun-400 to-sun-600"
-                      animate={{
-                        width: `${(completed.length / screenOrder.length) * 100}%`,
-                      }}
-                      transition={{ duration: 0.4 }}
-                    />
+                  <div className="mb-4">
+                    <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-mist">
+                      <span>
+                        Question {Math.min(completed.length + 1, screenOrder.length)} sur{" "}
+                        {screenOrder.length}
+                      </span>
+                      <span>{Math.round((completed.length / screenOrder.length) * 100)} %</span>
+                    </div>
+                    <div className="relative h-1.5 w-full rounded-full bg-line">
+                      <motion.div
+                        className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-sun-400 to-sun-600"
+                        animate={{ width: `${(completed.length / screenOrder.length) * 100}%` }}
+                        transition={{ duration: 0.4 }}
+                      />
+                      <motion.div
+                        className="absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-white bg-sun-600 shadow-card-sm"
+                        animate={{
+                          left: `${(completed.length / screenOrder.length) * 100}%`,
+                          marginLeft: -7,
+                        }}
+                        transition={{ duration: 0.4 }}
+                      />
+                    </div>
                   </div>
 
                   <div
@@ -423,16 +441,29 @@ export function ChatQualification() {
                       )}
 
                       {currentScreen === "identity" && (
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <Label htmlFor="prenom">Prénom</Label>
-                            <Input id="prenom" error={!!errors.prenom} {...register("prenom")} />
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label htmlFor="prenom">Prénom</Label>
+                              <Input id="prenom" error={!!errors.prenom} {...register("prenom")} />
+                            </div>
+                            <div>
+                              <Label htmlFor="nom">Nom</Label>
+                              <Input id="nom" error={!!errors.nom} {...register("nom")} />
+                            </div>
                           </div>
                           <div>
-                            <Label htmlFor="nom">Nom</Label>
-                            <Input id="nom" error={!!errors.nom} {...register("nom")} />
+                            <Label>Civilité (facultatif)</Label>
+                            <ChoiceButtons
+                              options={[
+                                { value: "madame", label: "Madame" },
+                                { value: "monsieur", label: "Monsieur" },
+                              ]}
+                              value={values.civilite}
+                              onSelect={(v) => setValue("civilite", v, { shouldValidate: true })}
+                            />
                           </div>
-                          <Button className="col-span-2 mt-1" onClick={() => goNext("identity")}>
+                          <Button className="w-full" onClick={() => goNext("identity")}>
                             Continuer <ArrowRight className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </div>
@@ -690,7 +721,12 @@ export function ChatQualification() {
         </Reveal>
 
         <Reveal delay={0.1} className="lg:sticky lg:top-24">
-          <LiveEstimatePanel estimate={estimate} showSolarMetrics={wantsPhotovoltaique} />
+          <LiveEstimatePanel
+            estimate={estimate}
+            showSolarMetrics={wantsPhotovoltaique}
+            civilite={values.civilite}
+            nombrePersonnes={values.nombrePersonnes}
+          />
         </Reveal>
       </div>
     </section>

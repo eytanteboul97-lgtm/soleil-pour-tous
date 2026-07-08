@@ -18,6 +18,9 @@ const baseLeadSchema = z.object({
     .array(z.enum(TYPE_TRAVAUX_VALUES))
     .min(1, "Sélectionnez au moins un type de travaux"),
 
+  // Facultatif — utilisé uniquement pour personnaliser l'expérience (ex.
+  // avatar dans le panneau de profil), jamais requis pour avancer.
+  civilite: z.enum(["madame", "monsieur"]).optional(),
   prenom: z.string().trim().min(2, "Prénom trop court"),
   nom: z.string().trim().min(2, "Nom trop court"),
   email: z.string().trim().email("Adresse email invalide"),
@@ -93,6 +96,11 @@ export const TYPE_TRAVAUX_LABELS: Record<(typeof TYPE_TRAVAUX_VALUES)[number], s
   "ballon-thermodynamique": "Ballon thermodynamique",
   isolation: "Isolation thermique",
   "renovation-globale": "Rénovation globale",
+};
+
+export const CIVILITE_LABELS: Record<NonNullable<LeadFormValues["civilite"]>, string> = {
+  madame: "Madame",
+  monsieur: "Monsieur",
 };
 
 export const NOMBRE_PERSONNES_LABELS: Record<LeadFormValues["nombrePersonnes"], string> = {
