@@ -33,7 +33,7 @@ export function buildLeadEmailHtml(lead: LeadFormValues, receivedAt: Date) {
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;">
     <div style="background:#0B1226;padding:24px 28px;border-radius:16px 16px 0 0;">
       <p style="color:#FFA51E;font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;margin:0 0 6px;">
-        HABINNOVA — via Soleil Pour Tous
+        Soleil Pour Tous
       </p>
       <h1 style="color:#fff;font-size:20px;margin:0;">
         Nouvelle demande de travaux de rénovation énergétique

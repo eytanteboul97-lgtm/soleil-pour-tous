@@ -20,7 +20,7 @@ const body = Inter({
 const siteUrl = "https://www.soleilpourtous.fr";
 const title = "Soleil Pour Tous — Panneaux solaires et aides à la rénovation énergétique";
 const description =
-  "Testez gratuitement votre éligibilité aux aides pour vos travaux de rénovation énergétique — panneaux solaires, pompe à chaleur, isolation — avec HABINNOVA. Étude gratuite, sans engagement.";
+  "Testez gratuitement votre éligibilité aux aides pour vos travaux de rénovation énergétique — panneaux solaires, pompe à chaleur, isolation. Étude gratuite, sans engagement.";
 
 export const viewport = {
   themeColor: "#060B17",
@@ -43,7 +43,6 @@ export const metadata: Metadata = {
     "pompe à chaleur",
     "isolation thermique",
     "MaPrimeRénov",
-    "HABINNOVA",
   ],
   authors: [{ name: "Soleil Pour Tous" }],
   alternates: {
@@ -70,20 +69,10 @@ export const metadata: Metadata = {
 
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "HomeAndConstructionBusiness",
-  name: "HABINNOVA",
-  alternateName: "Soleil Pour Tous",
+  "@type": "Organization",
+  name: "Soleil Pour Tous",
   description,
   url: siteUrl,
-  telephone: "+33185782775",
-  email: "contact@habinnova.fr",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "4 Avenue Laurent-Cély",
-    postalCode: "92600",
-    addressLocality: "Asnières-sur-Seine",
-    addressCountry: "FR",
-  },
   areaServed: "FR",
 };
 

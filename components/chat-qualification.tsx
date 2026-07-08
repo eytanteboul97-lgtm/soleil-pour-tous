@@ -564,7 +564,7 @@ export function ChatQualification() {
                               className="mt-0.5"
                             />
                             <label htmlFor="consentement" className="text-sm leading-relaxed text-ink-soft">
-                              J&apos;accepte d&apos;être recontacté(e) par HABINNOVA dans le
+                              J&apos;accepte d&apos;être recontacté(e) par Soleil Pour Tous dans le
                               cadre de ma demande d&apos;étude gratuite pour mes travaux de
                               rénovation énergétique.
                             </label>
@@ -600,7 +600,7 @@ export function ChatQualification() {
                   </h3>
                   <p className="mt-3 text-ink-soft">
                     Votre foyer semble éligible à plusieurs dispositifs de soutien. Un
-                    conseiller HABINNOVA vérifiera tout cela avec vous et vous
+                    conseiller Soleil Pour Tous vérifiera tout cela avec vous et vous
                     recontactera {values.disponibiliteRappel ? DISPONIBILITE_LABELS[values.disponibiliteRappel].toLowerCase() : "rapidement"} pour confirmer votre éligibilité.
                   </p>
                   {submitError && (

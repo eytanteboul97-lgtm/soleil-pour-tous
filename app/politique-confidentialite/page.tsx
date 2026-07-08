@@ -5,7 +5,7 @@ import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité",
-  description: "Politique de confidentialité et protection des données de HABINNOVA.",
+  description: "Politique de confidentialité et protection des données de Soleil Pour Tous.",
 };
 
 export default function PolitiqueConfidentialitePage() {
@@ -26,12 +26,10 @@ export default function PolitiqueConfidentialitePage() {
 
         <div className="mt-8 space-y-8 text-sm leading-relaxed text-ink-soft">
           <p>
-            Soleil Pour Tous est le simulateur d&apos;éligibilité utilisé par
-            HABINNOVA (4 Avenue Laurent-Cély, 92600 Asnières-sur-Seine) pour
-            qualifier les demandes de travaux de rénovation énergétique.
-            HABINNOVA accorde une importance particulière à la protection des
-            données personnelles de ses utilisateurs, conformément au
-            Règlement Général sur la Protection des Données (RGPD).
+            Soleil Pour Tous accorde une importance particulière à la
+            protection des données personnelles de ses utilisateurs,
+            conformément au Règlement Général sur la Protection des Données
+            (RGPD).
           </p>
 
           <section>
@@ -54,12 +52,12 @@ export default function PolitiqueConfidentialitePage() {
               Finalité du traitement
             </h2>
             <p className="mt-3">
-              Ces données sont utilisées exclusivement par HABINNOVA pour
-              évaluer votre éligibilité aux aides liées à vos travaux de
-              rénovation énergétique (panneaux photovoltaïques, pompes à
-              chaleur, isolation, etc.) et vous recontacter dans le cadre de
-              votre demande d&apos;étude gratuite. Elles ne sont jamais vendues
-              à des tiers.
+              Ces données sont utilisées exclusivement pour évaluer votre
+              éligibilité aux aides liées à vos travaux de rénovation
+              énergétique (panneaux photovoltaïques, pompes à chaleur,
+              isolation, etc.) et vous recontacter dans le cadre de votre
+              demande d&apos;étude gratuite. Elles ne sont jamais vendues à des
+              tiers.
             </p>
           </section>
 
@@ -92,11 +90,8 @@ export default function PolitiqueConfidentialitePage() {
               Conformément au RGPD, vous disposez d&apos;un droit
               d&apos;accès, de rectification, d&apos;effacement, de
               limitation et d&apos;opposition au traitement de vos données.
-              Pour exercer ces droits, contactez HABINNOVA à l&apos;adresse :{" "}
-              <a href="mailto:contact@habinnova.fr" className="underline">
-                contact@habinnova.fr
-              </a>{" "}
-              ou par téléphone au 01 85 78 27 75.
+              Pour exercer ces droits, contactez-nous à l&apos;adresse :
+              [Adresse email de contact DPO].
             </p>
           </section>
 

@@ -5,7 +5,7 @@ import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Mentions légales",
-  description: "Mentions légales de HABINNOVA.",
+  description: "Mentions légales de Soleil Pour Tous.",
 };
 
 export default function MentionsLegalesPage() {
@@ -26,23 +26,21 @@ export default function MentionsLegalesPage() {
 
         <div className="mt-8 space-y-8 text-sm leading-relaxed text-ink-soft">
           <p className="rounded-2xl bg-sun-50 p-4 text-sun-700">
-            Les champs [Forme juridique], [Capital social], [SIREN/SIRET],
-            [Numéro RCS] et [Directeur de la publication] doivent être
-            complétés avec les données d&apos;immatriculation réelles de
-            HABINNOVA avant mise en ligne définitive — ces informations
-            n&apos;ont pas été fournies et ne doivent pas être inventées.
+            Les informations d&apos;identification ci-dessous ([Raison sociale],
+            [SIREN/SIRET], [adresse du siège]…) doivent être complétées avec les
+            données réelles de la société avant toute mise en ligne définitive.
           </p>
 
           <section>
             <h2 className="font-display text-lg font-semibold text-ink">Éditeur du site</h2>
             <p className="mt-3">
-              Raison sociale : HABINNOVA
+              Raison sociale : [Raison sociale]
               <br />
               Forme juridique : [Forme juridique]
               <br />
               Capital social : [Capital social]
               <br />
-              Siège social : 4 Avenue Laurent-Cély, 92600 Asnières-sur-Seine
+              Siège social : [Adresse du siège social]
               <br />
               SIREN/SIRET : [Numéro SIREN/SIRET]
               <br />
@@ -50,9 +48,7 @@ export default function MentionsLegalesPage() {
               <br />
               Directeur de la publication : [Nom du directeur de la publication]
               <br />
-              Téléphone : 01 85 78 27 75
-              <br />
-              Contact : contact@habinnova.fr
+              Contact : [Adresse email de contact]
             </p>
           </section>
 
@@ -69,19 +65,19 @@ export default function MentionsLegalesPage() {
             <h2 className="font-display text-lg font-semibold text-ink">Propriété intellectuelle</h2>
             <p className="mt-3">
               L&apos;ensemble des contenus présents sur ce site (textes, visuels,
-              logos) est la propriété de HABINNOVA, sauf mention contraire, et
-              ne peut être reproduit sans autorisation préalable.
+              logos) est la propriété de Soleil Pour Tous, sauf mention
+              contraire, et ne peut être reproduit sans autorisation préalable.
             </p>
           </section>
 
           <section>
             <h2 className="font-display text-lg font-semibold text-ink">Responsabilité</h2>
             <p className="mt-3">
-              HABINNOVA s&apos;efforce d&apos;assurer l&apos;exactitude des
-              informations diffusées sur ce site, notamment concernant les
+              Soleil Pour Tous s&apos;efforce d&apos;assurer l&apos;exactitude
+              des informations diffusées sur ce site, notamment concernant les
               aides financières mentionnées, qui évoluent régulièrement et sont
-              données à titre indicatif. HABINNOVA ne garantit aucune aide
-              sans validation complète du dossier du client.
+              données à titre indicatif. Soleil Pour Tous ne garantit aucune
+              aide sans validation complète du dossier du client.
             </p>
           </section>
         </div>

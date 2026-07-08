@@ -63,8 +63,8 @@ export function SolutionsSection() {
             Un accompagnement complet pour vos travaux
           </h2>
           <p className="mt-4 text-mist">
-            HABINNOVA vous accompagne sur l&apos;ensemble de vos projets de
-            rénovation énergétique, du diagnostic jusqu&apos;aux aides
+            Soleil Pour Tous vous accompagne sur l&apos;ensemble de vos projets
+            de rénovation énergétique, du diagnostic jusqu&apos;aux aides
             disponibles.
           </p>
         </Reveal>
