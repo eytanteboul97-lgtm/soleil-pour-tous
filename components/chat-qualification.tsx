@@ -19,6 +19,7 @@ import { computeSimulation, getIncomeBand, regionLabel } from "@/lib/simulator";
 import { estimateReferenceMonthlyBill, estimateSavingsRate } from "@/lib/reference-bill";
 import { useAddressAutocomplete } from "@/lib/use-address-autocomplete";
 import { clearProgress, loadProgress, saveProgress } from "@/lib/form-persistence";
+import { trackLead } from "@/lib/meta-pixel";
 import {
   leadFormSchema,
   type LeadFormValues,
@@ -160,6 +161,7 @@ export function ChatQualification() {
   const [submitError, setSubmitError] = useState(false);
   const [restoredNotice, setRestoredNotice] = useState(false);
   const pendingSubmit = useRef<Promise<void> | null>(null);
+  const submitSucceeded = useRef(false);
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
   const screenInputRef = useRef<HTMLDivElement>(null);
 
@@ -263,7 +265,10 @@ export function ChatQualification() {
               body: JSON.stringify(finalValues),
             });
             if (!res.ok) setSubmitError(true);
-            else clearProgress();
+            else {
+              submitSucceeded.current = true;
+              clearProgress();
+            }
           } catch {
             setSubmitError(true);
           }
@@ -339,6 +344,7 @@ export function ChatQualification() {
   async function handleAnalyzingComplete() {
     if (pendingSubmit.current) await pendingSubmit.current;
     setPhase("result");
+    if (submitSucceeded.current) trackLead();
   }
 
   const estimate: LiveEstimate = useMemo(() => {
