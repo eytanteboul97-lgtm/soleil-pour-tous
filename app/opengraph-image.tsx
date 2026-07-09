@@ -32,12 +32,23 @@ export default async function OpengraphImage() {
             }}
           >
             <svg viewBox="0 0 48 48" width="76" height="76">
-              <line x1="24" y1="17" x2="24" y2="6" stroke="#FFA51E" strokeWidth="6.5" strokeLinecap="round" />
-              <line x1="30.06" y1="20.5" x2="39.59" y2="15" stroke="#FFFFFF" strokeWidth="6.5" strokeLinecap="round" />
-              <line x1="30.06" y1="27.5" x2="39.59" y2="33" stroke="#FFFFFF" strokeWidth="6.5" strokeLinecap="round" />
-              <line x1="24" y1="31" x2="24" y2="42" stroke="#FFFFFF" strokeWidth="6.5" strokeLinecap="round" />
-              <line x1="17.94" y1="27.5" x2="8.41" y2="33" stroke="#FFFFFF" strokeWidth="6.5" strokeLinecap="round" />
-              <line x1="17.94" y1="20.5" x2="8.41" y2="15" stroke="#FFFFFF" strokeWidth="6.5" strokeLinecap="round" />
+              <defs>
+                <linearGradient id="og-neutral" x1="6" y1="4" x2="42" y2="44" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#FFFFFF" />
+                  <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.55" />
+                </linearGradient>
+                <linearGradient id="og-accent" x1="24" y1="6" x2="24" y2="20" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#FFE9C7" />
+                  <stop offset="55%" stopColor="#FFA51E" />
+                  <stop offset="100%" stopColor="#F2680A" />
+                </linearGradient>
+              </defs>
+              <line x1="24" y1="17" x2="24" y2="6" stroke="url(#og-accent)" strokeWidth="6.5" strokeLinecap="round" />
+              <line x1="30.06" y1="20.5" x2="39.59" y2="15" stroke="url(#og-neutral)" strokeWidth="6.5" strokeLinecap="round" />
+              <line x1="30.06" y1="27.5" x2="39.59" y2="33" stroke="url(#og-neutral)" strokeWidth="6.5" strokeLinecap="round" />
+              <line x1="24" y1="31" x2="24" y2="42" stroke="url(#og-neutral)" strokeWidth="6.5" strokeLinecap="round" />
+              <line x1="17.94" y1="27.5" x2="8.41" y2="33" stroke="url(#og-neutral)" strokeWidth="6.5" strokeLinecap="round" />
+              <line x1="17.94" y1="20.5" x2="8.41" y2="15" stroke="url(#og-neutral)" strokeWidth="6.5" strokeLinecap="round" />
             </svg>
           </div>
           <div style={{ display: "flex", fontSize: 34, fontWeight: 700 }}>
