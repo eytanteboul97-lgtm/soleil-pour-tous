@@ -3,6 +3,7 @@ import { Space_Grotesk, Inter } from "next/font/google";
 import Script from "next/script";
 import { MotionConfig } from "framer-motion";
 import { HashScrollFix } from "@/components/hash-scroll-fix";
+import { SITE_URL } from "@/lib/site-config";
 import "./globals.css";
 
 const META_PIXEL_ID = "4598836663731046";
@@ -21,7 +22,7 @@ const body = Inter({
   display: "swap",
 });
 
-const siteUrl = "https://www.soleilpourtous.fr";
+const siteUrl = SITE_URL;
 const title = "Soleil Pour Tous — Panneaux solaires et aides à la rénovation énergétique";
 const description =
   "Testez gratuitement votre éligibilité aux aides pour vos travaux de rénovation énergétique — panneaux solaires, pompe à chaleur, isolation. Étude gratuite, sans engagement.";
