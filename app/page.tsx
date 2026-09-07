@@ -3,7 +3,6 @@ import { ChatQualification } from "@/components/chat-qualification";
 import { TrustSection } from "@/components/trust-section";
 import { SolutionsSection } from "@/components/solutions-section";
 import { AidesTable } from "@/components/aides-table";
-import { SunlightSection } from "@/components/sunlight-section";
 import { ProcessSection } from "@/components/process-section";
 import { FAQ } from "@/components/faq";
 import { FinalCTA } from "@/components/final-cta";
@@ -19,7 +18,6 @@ export default function Home() {
         <TrustSection />
         <SolutionsSection />
         <AidesTable />
-        <SunlightSection />
         <ProcessSection />
         <FAQ />
         <FinalCTA />

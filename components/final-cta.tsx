@@ -16,13 +16,13 @@ export function FinalCTA() {
 
       <Reveal className="relative mx-auto max-w-2xl px-5 text-center sm:px-8">
         <h2 className="font-display text-3xl font-bold text-white sm:text-5xl">
-          Votre toiture peut-elle vous faire économiser de l&apos;argent ?
+          Et si votre projet pouvait bénéficier d&apos;aides ?
         </h2>
         <p className="mt-5 text-lg text-white/60">
-          Une étude gratuite et sans engagement pour le savoir.
+          Quelques minutes suffisent pour obtenir une première analyse personnalisée.
         </p>
         <Button size="lg" className="mt-9" onClick={() => scrollToId("eligibilite")}>
-          Faire mon étude gratuite
+          Tester mon éligibilité
           <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
         </Button>
       </Reveal>

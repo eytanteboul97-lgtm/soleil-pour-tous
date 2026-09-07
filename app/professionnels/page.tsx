@@ -4,6 +4,7 @@ import { Building2, Factory, Landmark, Store } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Footer } from "@/components/footer";
 import { ProLeadForm } from "@/components/pro-lead-form";
+import { StickyMobileCTA } from "@/components/sticky-mobile-cta";
 import { SITE_URL } from "@/lib/site-config";
 
 export const metadata: Metadata = {
@@ -67,6 +68,12 @@ export default function ProfessionnelsPage() {
               association ou collectivité : identifiez les dispositifs d&apos;aide
               énergétique applicables à votre structure.
             </p>
+            <a
+              href="#pro-form"
+              className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-sun-400 to-sun-600 px-6 font-display text-[0.95rem] font-semibold text-white shadow-glow transition-all duration-300 hover:-translate-y-0.5"
+            >
+              Découvrir mes aides
+            </a>
           </div>
         </section>
 
@@ -89,7 +96,7 @@ export default function ProfessionnelsPage() {
           </div>
         </section>
 
-        <section className="bg-white px-5 py-16 sm:px-8 sm:py-20">
+        <section id="pro-form" className="anchor-offset bg-white px-5 py-16 sm:px-8 sm:py-20">
           <div className="mx-auto max-w-xl">
             <h2 className="text-center font-display text-2xl font-bold text-ink sm:text-3xl">
               Étudier les aides disponibles pour mon entreprise
@@ -112,6 +119,7 @@ export default function ProfessionnelsPage() {
         </section>
       </main>
       <Footer />
+      <StickyMobileCTA label="Découvrir mes aides" href="#pro-form" watchId="__none__" />
     </>
   );
 }

@@ -7,23 +7,23 @@ import { Reveal } from "@/components/reveal";
 const STEPS = [
   {
     icon: ClipboardCheck,
-    title: "Je teste mon éligibilité",
-    description: "Je réponds à quelques questions avec mon conseiller virtuel, en moins de 2 minutes.",
+    title: "Décrivez votre projet",
+    description: "Quelques questions avec mon conseiller virtuel, en moins de 2 minutes.",
   },
   {
     icon: UserCheck,
-    title: "Un conseiller analyse mon dossier",
-    description: "Un expert Soleil Pour Tous étudie mon profil et ma situation.",
+    title: "Nous recherchons les aides pertinentes",
+    description: "Le moteur analyse votre profil, votre secteur et votre projet.",
   },
   {
     icon: FileBarChart2,
-    title: "Je reçois une estimation personnalisée",
-    description: "Dimensionnement, économies estimées et aides applicables.",
+    title: "Découvrez votre résultat personnalisé",
+    description: "Les dispositifs potentiellement applicables à votre situation.",
   },
   {
     icon: Wrench,
-    title: "Installation et mise en service",
-    description: "Pose par l'un de nos installateurs partenaires certifiés, puis raccordement.",
+    title: "Passez à l'étape suivante",
+    description: "Si vous le souhaitez, un conseiller vous accompagne et vous met en relation avec un installateur partenaire certifié.",
   },
 ];
 

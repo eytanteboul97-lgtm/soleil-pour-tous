@@ -2,10 +2,17 @@
 
 import type { ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Gauge, MapPin, ShieldCheck, Wallet } from "lucide-react";
+import { Gauge, Home, MapPin, ShieldCheck, Wallet } from "lucide-react";
 import { useAnimatedNumber } from "@/lib/use-animated-number";
 import { cn } from "@/lib/utils";
-import { NOMBRE_PERSONNES_LABELS, type LeadFormValues } from "@/lib/lead-schema";
+import {
+  NOMBRE_PERSONNES_LABELS,
+  STATUT_LABELS,
+  TYPE_LOGEMENT_LABELS,
+  TYPE_TRAVAUX_EMOJI,
+  TYPE_TRAVAUX_LABELS,
+  type LeadFormValues,
+} from "@/lib/lead-schema";
 
 // Petite touche de personnalisation ludique du foyer — seul endroit du site
 // où l'on utilise de vrais emojis plutôt que les icônes Lucide, pour
@@ -155,13 +162,20 @@ export function LiveEstimatePanel({
   showSolarMetrics = true,
   civilite,
   nombrePersonnes,
+  typeLogement,
+  statutOccupation,
+  typeTravaux,
 }: {
   estimate: LiveEstimate;
   className?: string;
   showSolarMetrics?: boolean;
   civilite?: LeadFormValues["civilite"];
   nombrePersonnes?: LeadFormValues["nombrePersonnes"];
+  typeLogement?: LeadFormValues["typeLogement"];
+  statutOccupation?: LeadFormValues["statutOccupation"];
+  typeTravaux?: LeadFormValues["typeTravaux"];
 }) {
+  const primaryTravaux = typeTravaux?.[0];
   return (
     <div
       aria-live="polite"
@@ -199,6 +213,25 @@ export function LiveEstimatePanel({
       <div className="space-y-3">
         <Row icon={<MapPin className="h-5 w-5" aria-hidden="true" />} label="Votre secteur" ready={!!estimate.region}>
           {estimate.region ? REGION_COPY[estimate.region].label : ""}
+        </Row>
+        <Row icon={<Home className="h-5 w-5" aria-hidden="true" />} label="Votre logement" ready={!!typeLogement}>
+          {typeLogement ? TYPE_LOGEMENT_LABELS[typeLogement] : ""}
+          {statutOccupation ? ` · ${STATUT_LABELS[statutOccupation]}` : ""}
+        </Row>
+        <Row
+          icon={
+            primaryTravaux ? (
+              <span className="text-base leading-none" aria-hidden="true">
+                {TYPE_TRAVAUX_EMOJI[primaryTravaux]}
+              </span>
+            ) : (
+              <Gauge className="h-5 w-5" aria-hidden="true" />
+            )
+          }
+          label="Votre projet"
+          ready={!!primaryTravaux}
+        >
+          {primaryTravaux ? TYPE_TRAVAUX_LABELS[primaryTravaux] : ""}
         </Row>
         {showSolarMetrics && (
           <Row

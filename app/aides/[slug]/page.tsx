@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { CheckCircle2, ExternalLink } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Footer } from "@/components/footer";
+import { StickyMobileCTA } from "@/components/sticky-mobile-cta";
+import { SunlightSection } from "@/components/sunlight-section";
 import { SITE_URL } from "@/lib/site-config";
 import { AIDES_FICHES, AIDES_SLUGS, type AideSlug } from "@/lib/aides-content";
 import { cn } from "@/lib/utils";
@@ -95,7 +97,7 @@ export default async function AideFichePage({
 
         <div className="mt-8 flex flex-wrap gap-3">
           <Link href={eligibiliteHref} className={cn(BUTTON_BASE, BUTTON_SUN)}>
-            Tester mon éligibilité
+            Calculer mes aides
           </Link>
           <a href="#aides" className={cn(BUTTON_BASE, BUTTON_OUTLINE)}>
             Voir toutes les aides
@@ -129,6 +131,15 @@ export default async function AideFichePage({
               ))}
             </ul>
           </section>
+
+          <div className="rounded-2xl bg-paper p-5 text-center">
+            <p className="text-sm font-medium text-ink">
+              Voulez-vous savoir si votre projet est concerné ?
+            </p>
+            <Link href={eligibiliteHref} className={cn(BUTTON_BASE, BUTTON_SUN, "mt-3")}>
+              Calculer mes aides
+            </Link>
+          </div>
 
           <section>
             <h2 className="font-display text-lg font-semibold text-ink">Montant / mode de calcul</h2>
@@ -189,8 +200,22 @@ export default async function AideFichePage({
             ))}
           </div>
         </section>
+
+        <div className="mt-12 rounded-3xl bg-night p-8 text-center">
+          <p className="font-display text-lg font-semibold text-white">
+            Et si votre projet pouvait bénéficier de cette aide ?
+          </p>
+          <p className="mt-1.5 text-sm text-white/60">
+            Quelques minutes suffisent pour obtenir une première analyse personnalisée.
+          </p>
+          <Link href={eligibiliteHref} className={cn(BUTTON_BASE, BUTTON_SUN, "mt-4")}>
+            Calculer mes aides
+          </Link>
+        </div>
       </main>
+      {fiche.slug === "solaire" && <SunlightSection />}
       <Footer />
+      <StickyMobileCTA label="Calculer mes aides" href={eligibiliteHref} watchId="__none__" />
     </>
   );
 }

@@ -40,22 +40,12 @@ import {
   STATUT_LABELS,
   TYPE_CHAUFFAGE_LABELS,
   TYPE_LOGEMENT_LABELS,
+  TYPE_TRAVAUX_EMOJI,
   TYPE_TRAVAUX_LABELS,
   TYPE_TRAVAUX_VALUES,
 } from "@/lib/lead-schema";
 
 type Travaux = LeadFormValues["typeTravaux"][number];
-
-// Un émoji par type de travaux, pour un sélecteur de projet très visuel dès
-// la première question — plutôt que des icônes monochromes discrètes.
-const TRAVAUX_EMOJI: Record<Travaux, string> = {
-  photovoltaique: "☀️",
-  "pac-air-eau": "🔥",
-  "pac-air-air": "🌡️",
-  "ballon-thermodynamique": "💧",
-  isolation: "🏠",
-  "renovation-globale": "⚡",
-};
 
 type ScreenId =
   | "travaux"
@@ -105,7 +95,7 @@ function assistantMessage(screen: ScreenId, v: Partial<LeadFormValues>): string 
     case "toiture":
       return "Parlons de votre toiture pour le projet photovoltaïque : quelle est sa surface approximative, et son orientation principale ?";
     case "revenu":
-      return "Dernière question avant l'analyse : quel est votre revenu fiscal de référence ? Cette information sert uniquement à vérifier votre éligibilité aux aides.";
+      return "Dernière étape avant l'analyse : quel est votre revenu fiscal de référence ? Cette information sert uniquement à vérifier votre éligibilité aux aides.";
   }
 }
 
@@ -508,14 +498,13 @@ export function ChatQualification() {
           </span>
 
           <h1 className="font-display text-3xl font-bold leading-[1.1] text-white sm:text-4xl lg:text-[2.75rem]">
-            Quelles{" "}
-            <span className="text-gradient-sun">aides pouvez-vous obtenir</span>{" "}
-            pour vos travaux ?
+            À quelles <span className="text-gradient-sun">aides avez-vous droit</span> pour
+            votre projet ?
           </h1>
 
           <p className="mt-4 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
-            Découvrez en quelques minutes les aides et solutions disponibles
-            selon votre logement, votre localisation et votre projet.
+            Découvrez en quelques minutes les aides, primes et dispositifs
+            susceptibles de correspondre à votre situation.
           </p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -536,12 +525,12 @@ export function ChatQualification() {
                 document.getElementById("chat-card")?.scrollIntoView({ behavior: "smooth", block: "start" })
               }
             >
-              Trouver un professionnel RGE près de chez moi
+              Trouver un professionnel RGE <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
 
           <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
-            {["Gratuit", "2 minutes", "Sans engagement"].map((label) => (
+            {["Gratuit", "Rapide", "Sans engagement"].map((label) => (
               <li key={label} className="flex items-center gap-1.5 text-sm text-white/60">
                 <Check className="h-3.5 w-3.5 text-leaf-400" aria-hidden="true" />
                 {label}
@@ -624,7 +613,7 @@ export function ChatQualification() {
                             options={TYPE_TRAVAUX_VALUES.map((v) => ({
                               value: v,
                               label: TYPE_TRAVAUX_LABELS[v],
-                              emoji: TRAVAUX_EMOJI[v],
+                              emoji: TYPE_TRAVAUX_EMOJI[v],
                             }))}
                             values={values.typeTravaux ?? []}
                             onToggle={toggleTravaux}
@@ -951,7 +940,7 @@ export function ChatQualification() {
                     )}
                     {primaryTravauxLabel && (
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-paper px-3 py-1.5 text-xs font-semibold text-ink-soft">
-                        {values.typeTravaux?.[0] ? TRAVAUX_EMOJI[values.typeTravaux[0]] : ""}
+                        {values.typeTravaux?.[0] ? TYPE_TRAVAUX_EMOJI[values.typeTravaux[0]] : ""}
                         {primaryTravauxLabel}
                       </span>
                     )}
@@ -1075,6 +1064,9 @@ export function ChatQualification() {
             showSolarMetrics={wantsPhotovoltaique}
             civilite={values.civilite}
             nombrePersonnes={values.nombrePersonnes}
+            typeLogement={values.typeLogement}
+            statutOccupation={values.statutOccupation}
+            typeTravaux={values.typeTravaux}
           />
         </Reveal>
       </div>

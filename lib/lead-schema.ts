@@ -110,6 +110,18 @@ export const TYPE_TRAVAUX_LABELS: Record<(typeof TYPE_TRAVAUX_VALUES)[number], s
   "renovation-globale": "Rénovation globale",
 };
 
+// Un émoji par type de travaux, réutilisé partout où le projet du visiteur
+// doit se reconnaître visuellement d'un coup d'œil (sélecteur du
+// simulateur, panneau "profil en direct", écran de résultat).
+export const TYPE_TRAVAUX_EMOJI: Record<(typeof TYPE_TRAVAUX_VALUES)[number], string> = {
+  photovoltaique: "☀️",
+  "pac-air-eau": "🔥",
+  "pac-air-air": "🌡️",
+  "ballon-thermodynamique": "💧",
+  isolation: "🏠",
+  "renovation-globale": "⚡",
+};
+
 export const CIVILITE_LABELS: Record<NonNullable<LeadFormValues["civilite"]>, string> = {
   madame: "Madame",
   monsieur: "Monsieur",
