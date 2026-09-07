@@ -27,6 +27,12 @@ export function TrustSection() {
             </Reveal>
           ))}
         </div>
+
+        <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-relaxed text-mist">
+          Soleil Pour Tous est un service privé indépendant d&apos;accompagnement
+          aux aides à la rénovation énergétique — nous ne sommes ni un
+          organisme d&apos;État, ni France Rénov&apos;, ni l&apos;ADEME.
+        </p>
       </div>
     </section>
   );

@@ -16,6 +16,9 @@ export function Footer() {
           </div>
 
           <nav className="flex flex-col gap-3 text-sm">
+            <Link href="/professionnels" className="focus-ring-dark rounded-sm hover:text-white">
+              Professionnels
+            </Link>
             <Link href="/mentions-legales" className="focus-ring-dark rounded-sm hover:text-white">
               Mentions légales
             </Link>
@@ -33,9 +36,10 @@ export function Footer() {
 
         <div className="mt-12 space-y-3 border-t border-white/10 pt-8 text-xs leading-relaxed text-white/60">
           <p>
-            Soleil Pour Tous ne garantit aucune aide sans validation complète
-            du dossier. Les informations relatives aux aides sont données à
-            titre indicatif et peuvent évoluer.
+            Soleil Pour Tous est un service privé indépendant. Nous ne sommes
+            pas un organisme gouvernemental. L&apos;éligibilité et le montant
+            définitif des aides dépendent de la réglementation en vigueur et
+            de la validation du dossier par les organismes concernés.
           </p>
           <p>© {new Date().getFullYear()} Soleil Pour Tous. Tous droits réservés.</p>
         </div>

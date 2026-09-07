@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,8 @@ const links = [
   { href: "#etapes", label: "Étapes" },
   { href: "#faq", label: "FAQ" },
 ];
+
+const proLink = { href: "/professionnels", label: "Professionnels" };
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -67,6 +70,12 @@ export function Navbar() {
               {link.label}
             </a>
           ))}
+          <Link
+            href={proLink.href}
+            className="focus-ring-dark rounded-sm text-sm font-medium text-white/80 transition-colors hover:text-white"
+          >
+            {proLink.label}
+          </Link>
         </div>
 
         <div className="hidden md:block">
@@ -108,6 +117,13 @@ export function Navbar() {
                   {link.label}
                 </a>
               ))}
+              <Link
+                href={proLink.href}
+                onClick={() => setOpen(false)}
+                className="focus-ring-dark rounded-lg px-3 py-3 text-base font-medium text-white/85 hover:bg-white/5"
+              >
+                {proLink.label}
+              </Link>
               <Button
                 className="mt-2"
                 onClick={() => {

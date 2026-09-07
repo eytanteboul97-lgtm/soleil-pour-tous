@@ -223,6 +223,21 @@ export function ChatQualification() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Préselection depuis une landing page /aides/[slug] qui redirige vers
+  // /?travaux=isolation#eligibilite — équivalent à handlePreselect ci-dessus,
+  // mais lu depuis l'URL plutôt qu'un événement, puisqu'il s'agit ici d'une
+  // vraie navigation entre pages et non d'un simple clic sur la même page.
+  useEffect(() => {
+    const param = new URLSearchParams(window.location.search).get("travaux");
+    if (!param || !(TYPE_TRAVAUX_VALUES as readonly string[]).includes(param)) return;
+    const key = param as LeadFormValues["typeTravaux"][number];
+    const current = getValues("typeTravaux") ?? [];
+    if (!current.includes(key)) {
+      setValue("typeTravaux", [...current, key], { shouldValidate: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     const saved = loadProgress<LeadFormValues, ScreenId>();
     if (!saved) return;
@@ -454,14 +469,14 @@ export function ChatQualification() {
           </span>
 
           <h1 className="font-display text-3xl font-bold leading-[1.1] text-white sm:text-4xl lg:text-[2.75rem]">
-            Passez au solaire et{" "}
-            <span className="text-gradient-sun">réduisez vos factures</span>{" "}
-            d&apos;électricité
+            Découvrez les{" "}
+            <span className="text-gradient-sun">aides disponibles</span>{" "}
+            pour votre projet énergétique
           </h1>
 
           <p className="mt-4 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
-            Discutez avec votre conseiller travaux et découvrez en 2 minutes
-            votre éligibilité aux aides disponibles.
+            Vérifiez votre éligibilité et estimez les aides disponibles pour
+            financer vos travaux de rénovation énergétique.
           </p>
 
           <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
@@ -472,6 +487,16 @@ export function ChatQualification() {
               </li>
             ))}
           </ul>
+
+          <div className="mt-6">
+            <a
+              href="#solutions"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/80 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white hover:decoration-white/60"
+            >
+              Découvrir les aides
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </a>
+          </div>
 
           <div className="mt-8 min-h-[480px] rounded-3xl bg-white p-5 shadow-card sm:p-7">
             <AnimatePresence mode="wait">

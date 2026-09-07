@@ -1,45 +1,53 @@
 "use client";
 
+import Link from "next/link";
 import { ArrowRight, ChevronDown, Cylinder, Droplets, Hammer, Layers, Sun, Wind } from "lucide-react";
 import { Reveal } from "@/components/reveal";
 import { Button } from "@/components/ui/button";
 import { TYPE_TRAVAUX_LABELS, type LeadFormValues } from "@/lib/lead-schema";
+import type { AideSlug } from "@/lib/aides-content";
 
 type Travaux = LeadFormValues["typeTravaux"][number];
 
-const SOLUTIONS: { key: Travaux; icon: typeof Sun; description: string }[] = [
+const SOLUTIONS: { key: Travaux; aideSlug: AideSlug; icon: typeof Sun; description: string }[] = [
   {
     key: "photovoltaique",
+    aideSlug: "solaire",
     icon: Sun,
     description:
       "Produisez votre propre électricité et réduisez durablement vos factures grâce à des panneaux solaires adaptés à votre toiture.",
   },
   {
     key: "pac-air-eau",
+    aideSlug: "pompe-a-chaleur",
     icon: Droplets,
     description:
       "Remplacez votre chaudière par une pompe à chaleur Air/Eau performante, éligible à de nombreuses aides à la rénovation.",
   },
   {
     key: "pac-air-air",
+    aideSlug: "chauffage",
     icon: Wind,
     description:
       "Chauffez et rafraîchissez votre logement toute l'année avec une solution réversible économe en énergie.",
   },
   {
     key: "ballon-thermodynamique",
+    aideSlug: "chauffe-eau",
     icon: Cylinder,
     description:
       "Produisez votre eau chaude sanitaire jusqu'à 3 fois moins cher qu'un ballon électrique classique.",
   },
   {
     key: "isolation",
+    aideSlug: "isolation",
     icon: Layers,
     description:
       "Combles, murs, planchers : une bonne isolation est souvent le premier levier d'économies d'énergie du logement.",
   },
   {
     key: "renovation-globale",
+    aideSlug: "renovation-energetique",
     icon: Hammer,
     description:
       "Un accompagnement complet pour combiner plusieurs travaux et maximiser vos aides dans le cadre de MaPrimeRénov'.",
@@ -101,9 +109,36 @@ export function SolutionsSection() {
                 Vérifier mon éligibilité
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
               </Button>
+              <Link
+                href={`/aides/${solution.aideSlug}`}
+                className="focus-ring-light mt-3 rounded-sm text-center text-xs font-semibold text-sun-700 hover:underline"
+              >
+                En savoir plus sur cette aide
+              </Link>
             </Reveal>
           ))}
         </div>
+
+        <Reveal
+          delay={SOLUTIONS.length * 0.07}
+          className="mt-6 flex flex-col items-center justify-between gap-4 rounded-3xl border border-line bg-night p-7 sm:flex-row"
+        >
+          <div>
+            <h3 className="font-display text-lg font-semibold text-white">
+              Solutions pour les professionnels
+            </h3>
+            <p className="mt-1.5 text-sm text-white/60">
+              TPE, PME, industrie, commerce, copropriété, collectivité — des
+              dispositifs d&apos;aide spécifiques existent pour votre structure.
+            </p>
+          </div>
+          <Link
+            href="/professionnels"
+            className="focus-ring-dark inline-flex h-12 shrink-0 items-center justify-center rounded-full bg-white px-6 text-sm font-display font-semibold text-ink transition-all duration-300 hover:-translate-y-0.5"
+          >
+            Étudier les aides disponibles
+          </Link>
+        </Reveal>
       </div>
     </section>
   );

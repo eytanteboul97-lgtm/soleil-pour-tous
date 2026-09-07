@@ -43,6 +43,11 @@ const QUESTIONS = [
       "Non : Soleil Pour Tous est un service de mise en relation. Nous étudions votre éligibilité et vous mettons en contact avec un installateur partenaire certifié, sélectionné pour votre projet — c'est lui qui réalise les travaux.",
   },
   {
+    question: "Soleil Pour Tous est-il un organisme public ou gouvernemental ?",
+    answer:
+      "Non. Soleil Pour Tous est un service privé indépendant d'accompagnement, distinct de l'État, de France Rénov', de l'ADEME ou de l'ANAH. Nous vous aidons à identifier les dispositifs d'aide auxquels vous pourriez avoir droit et à monter votre dossier, mais l'éligibilité et le montant définitif des aides restent décidés par les organismes officiels concernés.",
+  },
+  {
     question: "Combien de temps dure une installation ?",
     answer:
       "Pour la plupart des projets (pompe à chaleur, panneaux solaires, chauffe-eau thermodynamique), l'installation est réalisée en une à deux journées par l'installateur partenaire retenu. Les travaux d'isolation ou de rénovation globale peuvent prendre plus de temps selon leur ampleur — le délai exact vous est communiqué après l'étude technique.",
