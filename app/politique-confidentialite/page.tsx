@@ -15,7 +15,7 @@ export default function PolitiqueConfidentialitePage() {
         <Logo theme="light" className="mx-auto max-w-3xl" />
       </header>
 
-      <main className="mx-auto max-w-3xl px-5 py-24 sm:px-8">
+      <main id="main-content" className="mx-auto max-w-3xl px-5 py-24 sm:px-8">
         <Link
           href="/"
           className="focus-ring-light rounded-sm text-sm font-medium text-sun-700 hover:underline"

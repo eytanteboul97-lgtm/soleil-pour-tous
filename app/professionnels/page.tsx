@@ -48,7 +48,7 @@ export default function ProfessionnelsPage() {
         <Logo theme="light" className="mx-auto max-w-5xl" />
       </header>
 
-      <main>
+      <main id="main-content">
         <section className="bg-night px-5 py-16 sm:px-8 sm:py-24">
           <div className="mx-auto max-w-3xl text-center">
             <Link

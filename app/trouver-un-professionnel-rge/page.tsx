@@ -21,7 +21,7 @@ export default function TrouverProfessionnelRgePage() {
         <Logo theme="light" className="mx-auto max-w-5xl" />
       </header>
 
-      <main>
+      <main id="main-content">
         <section
           id="rge-hero"
           className="anchor-offset relative overflow-hidden bg-night pb-20 pt-16 sm:pb-28 sm:pt-20"
