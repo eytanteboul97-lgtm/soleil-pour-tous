@@ -15,7 +15,10 @@ const links = [
   { href: "#faq", label: "FAQ" },
 ];
 
-const proLink = { href: "/professionnels", label: "Professionnels" };
+const staticLinks = [
+  { href: "/professionnels", label: "Professionnels" },
+  { href: "/trouver-un-professionnel-rge", label: "Trouver un pro RGE" },
+];
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -70,12 +73,15 @@ export function Navbar() {
               {link.label}
             </a>
           ))}
-          <Link
-            href={proLink.href}
-            className="focus-ring-dark rounded-sm text-sm font-medium text-white/80 transition-colors hover:text-white"
-          >
-            {proLink.label}
-          </Link>
+          {staticLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="focus-ring-dark rounded-sm text-sm font-medium text-white/80 transition-colors hover:text-white"
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
 
         <div className="hidden md:block">
@@ -117,13 +123,16 @@ export function Navbar() {
                   {link.label}
                 </a>
               ))}
-              <Link
-                href={proLink.href}
-                onClick={() => setOpen(false)}
-                className="focus-ring-dark rounded-lg px-3 py-3 text-base font-medium text-white/85 hover:bg-white/5"
-              >
-                {proLink.label}
-              </Link>
+              {staticLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className="focus-ring-dark rounded-lg px-3 py-3 text-base font-medium text-white/85 hover:bg-white/5"
+                >
+                  {link.label}
+                </Link>
+              ))}
               <Button
                 className="mt-2"
                 onClick={() => {

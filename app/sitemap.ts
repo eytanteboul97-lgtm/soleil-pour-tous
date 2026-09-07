@@ -7,6 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: SITE_URL, lastModified: now, changeFrequency: "weekly", priority: 1 },
     { url: `${SITE_URL}/professionnels`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${SITE_URL}/trouver-un-professionnel-rge`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     ...AIDES_SLUGS.map((slug) => ({
       url: `${SITE_URL}/aides/${slug}`,
       lastModified: now,

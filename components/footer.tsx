@@ -19,6 +19,12 @@ export function Footer() {
             <Link href="/professionnels" className="focus-ring-dark rounded-sm hover:text-white">
               Professionnels
             </Link>
+            <Link
+              href="/trouver-un-professionnel-rge"
+              className="focus-ring-dark rounded-sm hover:text-white"
+            >
+              Trouver un professionnel RGE
+            </Link>
             <Link href="/mentions-legales" className="focus-ring-dark rounded-sm hover:text-white">
               Mentions légales
             </Link>

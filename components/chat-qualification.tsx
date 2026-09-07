@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
@@ -13,7 +14,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -29,6 +30,7 @@ import { getApplicableDispositifs } from "@/lib/dispositifs";
 import { useAddressAutocomplete } from "@/lib/use-address-autocomplete";
 import { clearProgress, loadProgress, saveProgress } from "@/lib/form-persistence";
 import { trackLead, trackRgeInterest, trackSimulationStarted, trackTeaserViewed } from "@/lib/meta-pixel";
+import { cn } from "@/lib/utils";
 import {
   leadFormSchema,
   type LeadFormValues,
@@ -517,16 +519,12 @@ export function ChatQualification() {
             >
               Tester mon éligibilité <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Button>
-            <Button
-              variant="ghost-light"
-              size="lg"
-              className="border border-white/15"
-              onClick={() =>
-                document.getElementById("chat-card")?.scrollIntoView({ behavior: "smooth", block: "start" })
-              }
+            <Link
+              href="/trouver-un-professionnel-rge"
+              className={cn(buttonVariants({ variant: "ghost-light", size: "lg" }), "border border-white/15")}
             >
               Trouver un professionnel RGE <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Button>
+            </Link>
           </div>
 
           <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
