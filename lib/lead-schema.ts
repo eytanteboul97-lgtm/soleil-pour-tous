@@ -26,7 +26,11 @@ const baseLeadSchema = z.object({
   // avatar dans le panneau de profil), jamais requis pour avancer.
   civilite: z.enum(["madame", "monsieur"]).optional(),
   prenom: z.string().trim().min(2, "Prénom trop court"),
-  nom: z.string().trim().min(2, "Nom trop court"),
+  // Le nom de famille n'est plus demandé dans le formulaire (le palier de
+  // conversion est volontairement réduit à Prénom / Téléphone / Email) —
+  // gardé optionnel ici uniquement pour ne pas casser le typage/l'email
+  // récapitulatif si jamais renseigné ailleurs.
+  nom: z.string().trim().optional().default(""),
   email: z.string().trim().email("Adresse email invalide"),
   telephone: z.string().trim().regex(PHONE_REGEX, "Numéro de téléphone invalide"),
 
@@ -63,9 +67,13 @@ const baseLeadSchema = z.object({
     .min(1, "Champ requis")
     .refine((v) => Number(v) >= 0, "Montant invalide"),
 
-  disponibiliteRappel: z.enum(["matin", "apres-midi", "soir", "peu-importe"], {
-    required_error: "Sélectionnez une disponibilité",
-  }),
+  // Demandée en option seulement, après le résultat, pour ne pas alourdir le
+  // palier de conversion (Prénom/Téléphone/Email) — "peu-importe" par défaut
+  // si le visiteur ne répond pas à cette question facultative.
+  disponibiliteRappel: z
+    .enum(["matin", "apres-midi", "soir", "peu-importe"])
+    .optional()
+    .default("peu-importe"),
 
   consentement: z
     .boolean()

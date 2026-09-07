@@ -7,13 +7,13 @@ import { Logomark } from "@/components/logomark";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
-  "Vérification de votre éligibilité",
-  "Calcul de vos économies potentielles",
-  "Recherche des aides applicables à votre profil",
-  "Préparation de votre recommandation personnalisée",
+  "Analyse du logement",
+  "Vérification de la zone géographique",
+  "Recherche des aides disponibles",
+  "Recherche des professionnels du secteur",
 ];
 
-const STEP_DURATION = 700;
+const STEP_DURATION = 450;
 
 export function AnalyzingSequence({ onComplete }: { onComplete: () => void }) {
   const [activeStep, setActiveStep] = useState(0);
@@ -40,7 +40,7 @@ export function AnalyzingSequence({ onComplete }: { onComplete: () => void }) {
       </div>
 
       <h3 className="mt-6 font-display text-xl font-bold text-ink">
-        Préparation de votre estimation personnalisée
+        Analyse de votre situation…
       </h3>
 
       <ul className="mt-7 w-full max-w-sm space-y-3 text-left">

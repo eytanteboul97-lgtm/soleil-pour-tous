@@ -4,7 +4,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Check, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Loader2,
+  Lock,
+  MapPin,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,14 +25,13 @@ import { AnalyzingSequence } from "@/components/analyzing-sequence";
 import { Reveal } from "@/components/reveal";
 import { computeSimulation, getIncomeBand, regionLabel } from "@/lib/simulator";
 import { estimateReferenceMonthlyBill, estimateSavingsRate } from "@/lib/reference-bill";
+import { getApplicableDispositifs } from "@/lib/dispositifs";
 import { useAddressAutocomplete } from "@/lib/use-address-autocomplete";
 import { clearProgress, loadProgress, saveProgress } from "@/lib/form-persistence";
-import { trackLead } from "@/lib/meta-pixel";
+import { trackLead, trackRgeInterest, trackSimulationStarted, trackTeaserViewed } from "@/lib/meta-pixel";
 import {
   leadFormSchema,
   type LeadFormValues,
-  CIVILITE_LABELS,
-  DISPONIBILITE_LABELS,
   EMAIL_LOOKS_VALID_REGEX,
   NOMBRE_PERSONNES_LABELS,
   ORIENTATION_LABELS,
@@ -37,67 +44,68 @@ import {
   TYPE_TRAVAUX_VALUES,
 } from "@/lib/lead-schema";
 
+type Travaux = LeadFormValues["typeTravaux"][number];
+
+// Un émoji par type de travaux, pour un sélecteur de projet très visuel dès
+// la première question — plutôt que des icônes monochromes discrètes.
+const TRAVAUX_EMOJI: Record<Travaux, string> = {
+  photovoltaique: "☀️",
+  "pac-air-eau": "🔥",
+  "pac-air-air": "🌡️",
+  "ballon-thermodynamique": "💧",
+  isolation: "🏠",
+  "renovation-globale": "⚡",
+};
+
 type ScreenId =
   | "travaux"
-  | "identity"
-  | "contact"
-  | "address"
-  | "statut"
   | "logement"
+  | "statut"
+  | "chauffage"
+  | "address"
   | "personnes"
   | "facture"
-  | "chauffage"
   | "toiture"
-  | "revenu"
-  | "disponibilite"
-  | "consent";
+  | "revenu";
 
 const FIELDS_BY_SCREEN: Record<ScreenId, (keyof LeadFormValues)[]> = {
   travaux: ["typeTravaux"],
-  identity: ["prenom", "nom"],
-  contact: ["email", "telephone"],
-  address: ["adresse", "codePostal", "ville"],
-  statut: ["statutOccupation"],
   logement: ["typeLogement"],
+  statut: ["statutOccupation"],
+  chauffage: ["typeChauffage"],
+  address: ["adresse", "codePostal", "ville"],
   personnes: ["nombrePersonnes"],
   facture: ["factureMensuelle"],
-  chauffage: ["typeChauffage"],
   toiture: ["surfaceToiture", "orientationToit"],
   revenu: ["revenuFiscal"],
-  disponibilite: ["disponibiliteRappel"],
-  consent: ["consentement"],
 };
 
+// Questions volontairement ordonnées du plus facile/anodin (projet, logement)
+// au plus engageant (revenu) — le prénom, le téléphone et l'email ne sont
+// demandés qu'une fois à l'écran "teaser" ci-dessous, jamais avant : on ne
+// commence jamais par les coordonnées.
 function assistantMessage(screen: ScreenId, v: Partial<LeadFormValues>): string {
   switch (screen) {
     case "travaux":
-      return "Bonjour, je suis ravi de vous accompagner. Sur quel(s) type(s) de travaux souhaitez-vous être conseillé(e) ?";
-    case "identity":
-      return "Parfait. Pour préparer votre dossier, comment vous appelez-vous ?";
-    case "contact":
-      return `Merci${v.prenom ? " " + v.prenom : ""}. Sur quelle adresse email et quel numéro de téléphone puis-je vous recontacter ?`;
-    case "address":
-      return "Quelle est l'adresse du logement concerné par les travaux ?";
+      return "Bonjour ! Quel est votre projet ?";
+    case "logement":
+      return "Et pour quel type de logement ?";
     case "statut":
       return "Êtes-vous propriétaire ou locataire de ce logement ?";
-    case "logement":
-      return v.statutOccupation === "locataire"
-        ? "Et de quel type de logement s'agit-il ? Petite précision : en tant que locataire, l'accord de votre propriétaire sera nécessaire avant les travaux — votre conseiller pourra vous accompagner pour en discuter avec lui."
-        : "Et de quel type de logement s'agit-il ?";
-    case "personnes":
-      return "Combien de personnes vivent dans le foyer ? Cela m'aide à mieux estimer votre consommation.";
-    case "facture":
-      return "Quel est le montant approximatif de votre facture d'électricité mensuelle ?";
     case "chauffage":
-      return "Quel type de chauffage utilisez-vous actuellement ?";
+      return v.statutOccupation === "locataire"
+        ? "Parfait, votre projet se précise. Petite précision au passage : en tant que locataire, l'accord de votre propriétaire sera nécessaire avant les travaux — votre conseiller pourra vous accompagner pour en discuter avec lui. Quel type de chauffage utilisez-vous actuellement ?"
+        : "Parfait, votre projet se précise. Quel type de chauffage utilisez-vous actuellement ?";
+    case "address":
+      return "Dans quelle commune se trouve le logement ? Cela nous permet de vérifier les aides disponibles dans votre secteur.";
+    case "personnes":
+      return "Combien de personnes vivent dans le foyer ?";
+    case "facture":
+      return "Encore quelques questions pour identifier vos aides. Quel est le montant approximatif de votre facture d'électricité mensuelle ?";
     case "toiture":
       return "Parlons de votre toiture pour le projet photovoltaïque : quelle est sa surface approximative, et son orientation principale ?";
     case "revenu":
-      return "Quel est votre revenu fiscal de référence ? Cette information sert uniquement à vérifier votre éligibilité aux aides.";
-    case "disponibilite":
-      return "Dernière question : quelle est votre disponibilité pour être rappelé(e) par un conseiller ?";
-    case "consent":
-      return "Parfait, j'ai tout ce qu'il me faut pour préparer votre estimation. Une dernière chose avant de lancer l'analyse :";
+      return "Dernière question avant l'analyse : quel est votre revenu fiscal de référence ? Cette information sert uniquement à vérifier votre éligibilité aux aides.";
   }
 }
 
@@ -105,51 +113,40 @@ function userSummary(screen: ScreenId, v: Partial<LeadFormValues>): string {
   switch (screen) {
     case "travaux":
       return (v.typeTravaux ?? []).map((t) => TYPE_TRAVAUX_LABELS[t]).join(", ");
-    case "identity": {
-      const title = v.civilite ? `${CIVILITE_LABELS[v.civilite]} ` : "";
-      return `${title}${v.prenom ?? ""} ${v.nom ?? ""}`.trim();
-    }
-    case "contact":
-      return `${v.email ?? ""} · ${v.telephone ?? ""}`;
-    case "address":
-      return `${v.adresse ?? ""}, ${v.codePostal ?? ""} ${v.ville ?? ""}`;
-    case "statut":
-      return v.statutOccupation ? STATUT_LABELS[v.statutOccupation] : "";
     case "logement":
       return v.typeLogement ? TYPE_LOGEMENT_LABELS[v.typeLogement] : "";
+    case "statut":
+      return v.statutOccupation ? STATUT_LABELS[v.statutOccupation] : "";
+    case "chauffage":
+      return v.typeChauffage ? TYPE_CHAUFFAGE_LABELS[v.typeChauffage] : "";
+    case "address":
+      return `${v.codePostal ?? ""} ${v.ville ?? ""}`.trim();
     case "personnes":
       return v.nombrePersonnes ? NOMBRE_PERSONNES_LABELS[v.nombrePersonnes] : "";
     case "facture":
       return `${v.factureMensuelle ?? ""} € / mois`;
-    case "chauffage":
-      return v.typeChauffage ? TYPE_CHAUFFAGE_LABELS[v.typeChauffage] : "";
     case "toiture":
       return `${v.surfaceToiture ?? ""} m² · ${v.orientationToit ? ORIENTATION_LABELS[v.orientationToit] : ""}`;
     case "revenu":
       return `${v.revenuFiscal ?? ""} €`;
-    case "disponibilite":
-      return v.disponibiliteRappel ? DISPONIBILITE_LABELS[v.disponibiliteRappel] : "";
-    case "consent":
-      return "J'accepte d'être recontacté(e)";
   }
 }
 
 const TYPING_DELAY = 550;
+const RGE_SEARCH_DELAY = 1200;
 
 function buildScreenOrder(wantsPhotovoltaique: boolean): ScreenId[] {
   const order: ScreenId[] = [
     "travaux",
-    "identity",
-    "contact",
-    "address",
-    "statut",
     "logement",
-    "personnes",
+    "statut",
     "chauffage",
+    "address",
+    "personnes",
     "facture",
   ];
   if (wantsPhotovoltaique) order.push("toiture");
-  order.push("revenu", "disponibilite", "consent");
+  order.push("revenu");
   return order;
 }
 
@@ -157,11 +154,14 @@ export function ChatQualification() {
   const [completed, setCompleted] = useState<ScreenId[]>([]);
   const [currentScreen, setCurrentScreen] = useState<ScreenId | null>(null);
   const [showTyping, setShowTyping] = useState(true);
-  const [phase, setPhase] = useState<"chat" | "analyzing" | "result">("chat");
+  const [phase, setPhase] = useState<"chat" | "analyzing" | "teaser" | "result">("chat");
+  const [isSubmittingLead, setIsSubmittingLead] = useState(false);
   const [submitError, setSubmitError] = useState(false);
   const [restoredNotice, setRestoredNotice] = useState(false);
-  const pendingSubmit = useRef<Promise<void> | null>(null);
+  const [rgeStep, setRgeStep] = useState<"idle" | "searching" | "done">("idle");
+  const [rgeConfirmed, setRgeConfirmed] = useState(false);
   const submitSucceeded = useRef(false);
+  const simulationStarted = useRef(false);
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
   const screenInputRef = useRef<HTMLDivElement>(null);
 
@@ -194,12 +194,15 @@ export function ChatQualification() {
 
   const values = watch();
   const wantsPhotovoltaique = (values.typeTravaux ?? []).includes("photovoltaique");
+  const dispositifs = useMemo(
+    () => getApplicableDispositifs(values.typeTravaux ?? []),
+    [values.typeTravaux]
+  );
 
   // Retour "champ valide" instantané, indépendant des erreurs (qui n'apparaissent
   // qu'après avoir quitté le champ) — pure réassurance positive pendant la saisie.
   const fieldValid = {
     prenom: (values.prenom ?? "").trim().length >= 2,
-    nom: (values.nom ?? "").trim().length >= 2,
     email: EMAIL_LOOKS_VALID_REGEX.test(values.email ?? ""),
     telephone: PHONE_REGEX.test(values.telephone ?? ""),
     adresse: (values.adresse ?? "").trim().length >= 5,
@@ -212,7 +215,7 @@ export function ChatQualification() {
 
   useEffect(() => {
     function handlePreselect(e: Event) {
-      const key = (e as CustomEvent<LeadFormValues["typeTravaux"][number]>).detail;
+      const key = (e as CustomEvent<Travaux>).detail;
       const current = getValues("typeTravaux") ?? [];
       if (!current.includes(key)) {
         setValue("typeTravaux", [...current, key], { shouldValidate: true });
@@ -230,7 +233,7 @@ export function ChatQualification() {
   useEffect(() => {
     const param = new URLSearchParams(window.location.search).get("travaux");
     if (!param || !(TYPE_TRAVAUX_VALUES as readonly string[]).includes(param)) return;
-    const key = param as LeadFormValues["typeTravaux"][number];
+    const key = param as Travaux;
     const current = getValues("typeTravaux") ?? [];
     if (!current.includes(key)) {
       setValue("typeTravaux", [...current, key], { shouldValidate: true });
@@ -242,15 +245,21 @@ export function ChatQualification() {
     const saved = loadProgress<LeadFormValues, ScreenId>();
     if (!saved) return;
     const order = buildScreenOrder(saved.values.typeTravaux?.includes("photovoltaique") ?? false);
-    // Progression déjà terminée ou incohérente (schéma changé entre-temps) :
+    // Progression déjà terminée, vide, ou sauvegardée avant une évolution du
+    // parcours (anciens écrans "identity"/"contact"/... qui n'existent plus) :
     // on repart simplement sur un formulaire neuf plutôt que de risquer un
-    // état invalide.
-    if (saved.completed.length === 0 || saved.completed.length >= order.length) return;
+    // état invalide ou un plantage au rendu du fil de discussion.
+    const isValidScreenSet = saved.completed.every((s) => (order as string[]).includes(s));
+    if (!isValidScreenSet || saved.completed.length === 0 || saved.completed.length >= order.length) {
+      clearProgress();
+      return;
+    }
     reset(saved.values);
     setCompleted(saved.completed);
     setCurrentScreen(order[saved.completed.length]);
     setShowTyping(false);
     setRestoredNotice(true);
+    simulationStarted.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -271,23 +280,6 @@ export function ChatQualification() {
     const timeout = setTimeout(() => {
       if (idx >= screenOrder.length) {
         setPhase("analyzing");
-        const finalValues = getValues();
-        pendingSubmit.current = (async () => {
-          try {
-            const res = await fetch("/api/lead", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(finalValues),
-            });
-            if (!res.ok) setSubmitError(true);
-            else {
-              submitSucceeded.current = true;
-              clearProgress();
-            }
-          } catch {
-            setSubmitError(true);
-          }
-        })();
       } else {
         setCurrentScreen(screenOrder[idx]);
         setShowTyping(false);
@@ -330,6 +322,10 @@ export function ChatQualification() {
   async function goNext(screen: ScreenId) {
     const valid = await trigger(FIELDS_BY_SCREEN[screen]);
     if (!valid) return;
+    if (!simulationStarted.current) {
+      simulationStarted.current = true;
+      trackSimulationStarted();
+    }
     const nextCompleted = [...completed, screen];
     setCompleted(nextCompleted);
     setCurrentScreen(null);
@@ -348,7 +344,7 @@ export function ChatQualification() {
     setTimeout(() => goNext(screen), 250);
   }
 
-  function toggleTravaux(value: LeadFormValues["typeTravaux"][number]) {
+  function toggleTravaux(value: Travaux) {
     const current = values.typeTravaux ?? [];
     const next = current.includes(value)
       ? current.filter((v) => v !== value)
@@ -356,10 +352,49 @@ export function ChatQualification() {
     setValue("typeTravaux", next, { shouldValidate: true });
   }
 
-  async function handleAnalyzingComplete() {
-    if (pendingSubmit.current) await pendingSubmit.current;
-    setPhase("result");
-    if (submitSucceeded.current) trackLead();
+  function handleAnalyzingComplete() {
+    setPhase("teaser");
+    trackTeaserViewed();
+  }
+
+  async function submitLead(e: React.FormEvent) {
+    e.preventDefault();
+    const valid = await trigger(["prenom", "email", "telephone", "consentement"]);
+    if (!valid) return;
+    setIsSubmittingLead(true);
+    setSubmitError(false);
+    try {
+      const res = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(getValues()),
+      });
+      if (!res.ok) {
+        setSubmitError(true);
+      } else {
+        submitSucceeded.current = true;
+        clearProgress();
+        trackLead();
+      }
+    } catch {
+      setSubmitError(true);
+    } finally {
+      // On ne bloque jamais l'affichage du résultat pour un souci technique
+      // d'envoi : la donnée a été validée côté formulaire, seul l'acheminement
+      // a pu échouer — c'est le même principe que sur /api/lead lui-même.
+      setIsSubmittingLead(false);
+      setPhase("result");
+    }
+  }
+
+  function startRgeSearch() {
+    setRgeStep("searching");
+    setTimeout(() => setRgeStep("done"), RGE_SEARCH_DELAY);
+  }
+
+  function confirmRgeRequest() {
+    setRgeConfirmed(true);
+    trackRgeInterest();
   }
 
   const estimate: LiveEstimate = useMemo(() => {
@@ -439,6 +474,10 @@ export function ChatQualification() {
     values.typeTravaux,
   ]);
 
+  const primaryTravauxLabel = values.typeTravaux?.[0]
+    ? TYPE_TRAVAUX_LABELS[values.typeTravaux[0]]
+    : undefined;
+
   return (
     <section
       id="eligibilite"
@@ -469,18 +508,40 @@ export function ChatQualification() {
           </span>
 
           <h1 className="font-display text-3xl font-bold leading-[1.1] text-white sm:text-4xl lg:text-[2.75rem]">
-            Découvrez les{" "}
-            <span className="text-gradient-sun">aides disponibles</span>{" "}
-            pour votre projet énergétique
+            Quelles{" "}
+            <span className="text-gradient-sun">aides pouvez-vous obtenir</span>{" "}
+            pour vos travaux ?
           </h1>
 
           <p className="mt-4 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
-            Vérifiez votre éligibilité et estimez les aides disponibles pour
-            financer vos travaux de rénovation énergétique.
+            Découvrez en quelques minutes les aides et solutions disponibles
+            selon votre logement, votre localisation et votre projet.
           </p>
 
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Button
+              variant="sun"
+              size="lg"
+              onClick={() =>
+                document.getElementById("chat-card")?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
+            >
+              Tester mon éligibilité <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Button>
+            <Button
+              variant="ghost-light"
+              size="lg"
+              className="border border-white/15"
+              onClick={() =>
+                document.getElementById("chat-card")?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
+            >
+              Trouver un professionnel RGE près de chez moi
+            </Button>
+          </div>
+
           <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
-            {["Gratuit", "2 minutes", "Sans engagement", "Analyse personnalisée"].map((label) => (
+            {["Gratuit", "2 minutes", "Sans engagement"].map((label) => (
               <li key={label} className="flex items-center gap-1.5 text-sm text-white/60">
                 <Check className="h-3.5 w-3.5 text-leaf-400" aria-hidden="true" />
                 {label}
@@ -488,17 +549,7 @@ export function ChatQualification() {
             ))}
           </ul>
 
-          <div className="mt-6">
-            <a
-              href="#solutions"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/80 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white hover:decoration-white/60"
-            >
-              Découvrir les aides
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </a>
-          </div>
-
-          <div className="mt-8 min-h-[480px] rounded-3xl bg-white p-5 shadow-card sm:p-7">
+          <div id="chat-card" className="mt-8 min-h-[480px] scroll-mt-28 rounded-3xl bg-white p-5 shadow-card sm:p-7">
             <AnimatePresence mode="wait">
               {phase === "chat" && (
                 <motion.div
@@ -524,10 +575,7 @@ export function ChatQualification() {
 
                   <div className="mb-4">
                     <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-mist">
-                      <span>
-                        Question {Math.min(completed.length + 1, screenOrder.length)} sur{" "}
-                        {screenOrder.length}
-                      </span>
+                      <span>Votre simulation</span>
                       <span>{Math.round((completed.length / screenOrder.length) * 100)} %</span>
                     </div>
                     <div className="relative h-1.5 w-full rounded-full bg-line">
@@ -569,10 +617,14 @@ export function ChatQualification() {
                     <div ref={screenInputRef} className="mt-4 border-t border-line pt-5">
                       {currentScreen === "travaux" && (
                         <div className="space-y-4">
+                          <p className="text-xs text-mist">
+                            Vous pouvez sélectionner plusieurs projets.
+                          </p>
                           <MultiChoiceButtons
                             options={TYPE_TRAVAUX_VALUES.map((v) => ({
                               value: v,
                               label: TYPE_TRAVAUX_LABELS[v],
+                              emoji: TRAVAUX_EMOJI[v],
                             }))}
                             values={values.typeTravaux ?? []}
                             onToggle={toggleTravaux}
@@ -587,78 +639,40 @@ export function ChatQualification() {
                         </div>
                       )}
 
-                      {currentScreen === "identity" && (
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <Label htmlFor="prenom">Prénom</Label>
-                              <Input
-                                id="prenom"
-                                autoComplete="given-name"
-                                error={!!errors.prenom}
-                                valid={fieldValid.prenom}
-                                {...register("prenom")}
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="nom">Nom</Label>
-                              <Input
-                                id="nom"
-                                autoComplete="family-name"
-                                error={!!errors.nom}
-                                valid={fieldValid.nom}
-                                {...register("nom")}
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <Label>Civilité (facultatif)</Label>
-                            <ChoiceButtons
-                              options={[
-                                { value: "madame", label: "Madame" },
-                                { value: "monsieur", label: "Monsieur" },
-                              ]}
-                              value={values.civilite}
-                              onSelect={(v) => setValue("civilite", v, { shouldValidate: true })}
-                            />
-                          </div>
-                          <Button className="w-full" onClick={() => goNext("identity")}>
-                            Continuer <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                          </Button>
-                        </div>
+                      {currentScreen === "logement" && (
+                        <ChoiceButtons
+                          options={[
+                            { value: "maison", label: "Maison", emoji: "🏡" },
+                            { value: "appartement", label: "Appartement", emoji: "🏢" },
+                            { value: "autre", label: "Autre", emoji: "🏘️" },
+                          ]}
+                          value={values.typeLogement}
+                          onSelect={(v) => selectAndAdvance("logement", "typeLogement", v)}
+                        />
                       )}
 
-                      {currentScreen === "contact" && (
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                          <div>
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                              id="email"
-                              type="email"
-                              autoComplete="email"
-                              inputMode="email"
-                              error={!!errors.email}
-                              valid={fieldValid.email}
-                              {...register("email")}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="telephone">Téléphone</Label>
-                            <Input
-                              id="telephone"
-                              type="tel"
-                              autoComplete="tel"
-                              inputMode="tel"
-                              placeholder="06 12 34 56 78"
-                              error={!!errors.telephone}
-                              valid={fieldValid.telephone}
-                              {...register("telephone")}
-                            />
-                          </div>
-                          <Button className="sm:col-span-2 mt-1" onClick={() => goNext("contact")}>
-                            Continuer <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                          </Button>
-                        </div>
+                      {currentScreen === "statut" && (
+                        <ChoiceButtons
+                          options={[
+                            { value: "proprietaire", label: "Propriétaire" },
+                            { value: "locataire", label: "Locataire" },
+                          ]}
+                          value={values.statutOccupation}
+                          onSelect={(v) => selectAndAdvance("statut", "statutOccupation", v)}
+                        />
+                      )}
+
+                      {currentScreen === "chauffage" && (
+                        <ChoiceButtons
+                          options={[
+                            { value: "electrique", label: "Électrique" },
+                            { value: "gaz", label: "Gaz" },
+                            { value: "fioul", label: "Fioul" },
+                            { value: "autre", label: "Autre" },
+                          ]}
+                          value={values.typeChauffage}
+                          onSelect={(v) => selectAndAdvance("chauffage", "typeChauffage", v)}
+                        />
                       )}
 
                       {currentScreen === "address" && (
@@ -701,29 +715,6 @@ export function ChatQualification() {
                         </div>
                       )}
 
-                      {currentScreen === "statut" && (
-                        <ChoiceButtons
-                          options={[
-                            { value: "proprietaire", label: "Propriétaire" },
-                            { value: "locataire", label: "Locataire" },
-                          ]}
-                          value={values.statutOccupation}
-                          onSelect={(v) => selectAndAdvance("statut", "statutOccupation", v)}
-                        />
-                      )}
-
-                      {currentScreen === "logement" && (
-                        <ChoiceButtons
-                          options={[
-                            { value: "maison", label: "Maison" },
-                            { value: "appartement", label: "Appartement" },
-                            { value: "autre", label: "Autre" },
-                          ]}
-                          value={values.typeLogement}
-                          onSelect={(v) => selectAndAdvance("logement", "typeLogement", v)}
-                        />
-                      )}
-
                       {currentScreen === "personnes" && (
                         <ChoiceButtons
                           options={[
@@ -753,19 +744,6 @@ export function ChatQualification() {
                             Continuer <ArrowRight className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </div>
-                      )}
-
-                      {currentScreen === "chauffage" && (
-                        <ChoiceButtons
-                          options={[
-                            { value: "electrique", label: "Électrique" },
-                            { value: "gaz", label: "Gaz" },
-                            { value: "fioul", label: "Fioul" },
-                            { value: "autre", label: "Autre" },
-                          ]}
-                          value={values.typeChauffage}
-                          onSelect={(v) => selectAndAdvance("chauffage", "typeChauffage", v)}
-                        />
                       )}
 
                       {currentScreen === "toiture" && (
@@ -818,44 +796,7 @@ export function ChatQualification() {
                             />
                           </div>
                           <Button className="mt-1" onClick={() => goNext("revenu")}>
-                            Continuer <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                          </Button>
-                        </div>
-                      )}
-
-                      {currentScreen === "disponibilite" && (
-                        <ChoiceButtons
-                          options={[
-                            { value: "matin", label: "Le matin" },
-                            { value: "apres-midi", label: "L'après-midi" },
-                            { value: "soir", label: "Le soir" },
-                            { value: "peu-importe", label: "Peu importe" },
-                          ]}
-                          value={values.disponibiliteRappel}
-                          onSelect={(v) => selectAndAdvance("disponibilite", "disponibiliteRappel", v)}
-                        />
-                      )}
-
-                      {currentScreen === "consent" && (
-                        <div className="space-y-4">
-                          <div className="flex items-start gap-3 rounded-2xl bg-paper p-4">
-                            <Checkbox
-                              id="consentement"
-                              checked={values.consentement === true}
-                              onCheckedChange={(v) =>
-                                setValue("consentement", v === true, { shouldValidate: true })
-                              }
-                              error={!!errors.consentement}
-                              className="mt-0.5"
-                            />
-                            <label htmlFor="consentement" className="text-sm leading-relaxed text-ink-soft">
-                              J&apos;accepte d&apos;être recontacté(e) par Soleil Pour Tous dans le
-                              cadre de ma demande d&apos;étude gratuite pour mes travaux de
-                              rénovation énergétique.
-                            </label>
-                          </div>
-                          <Button className="w-full" onClick={() => goNext("consent")}>
-                            Lancer mon analyse <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                            Lancer l&apos;analyse <ArrowRight className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </div>
                       )}
@@ -870,12 +811,124 @@ export function ChatQualification() {
                 </motion.div>
               )}
 
+              {phase === "teaser" && (
+                <motion.div
+                  key="teaser"
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="rounded-3xl bg-white p-6 sm:p-8"
+                >
+                  <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-leaf-500/10 text-leaf-600">
+                    <Sparkles className="h-7 w-7" aria-hidden="true" />
+                  </span>
+                  <h3 className="mt-5 text-center font-display text-2xl font-bold text-ink">
+                    Bonne nouvelle !
+                  </h3>
+                  <p className="mt-2 text-center text-sm text-ink-soft">
+                    Nous avons identifié {dispositifs.length} dispositif
+                    {dispositifs.length > 1 ? "s" : ""} susceptible
+                    {dispositifs.length > 1 ? "s" : ""} de correspondre à votre
+                    projet{estimate.region ? ` à ${estimate.region}` : ""}.
+                  </p>
+
+                  <ul className="mt-5 space-y-2">
+                    {dispositifs.map((d) => (
+                      <li key={d.label} className="flex items-center gap-2 text-sm font-medium text-ink">
+                        <Check className="h-4 w-4 shrink-0 text-leaf-600" aria-hidden="true" />
+                        {d.label}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="mt-6 rounded-2xl bg-sun-50 p-4 text-center">
+                    <p className="text-sm font-semibold text-sun-800">
+                      Votre estimation personnalisée est prête.
+                    </p>
+                    <p className="mt-1 text-xs text-sun-700">
+                      Recevez le détail des aides identifiées, les prochaines
+                      étapes et les solutions adaptées à votre projet.
+                    </p>
+                  </div>
+
+                  <form onSubmit={submitLead} className="mt-6 space-y-3">
+                    <div>
+                      <Label htmlFor="teaser-prenom">Prénom</Label>
+                      <Input
+                        id="teaser-prenom"
+                        autoComplete="given-name"
+                        error={!!errors.prenom}
+                        valid={fieldValid.prenom}
+                        {...register("prenom")}
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <Label htmlFor="teaser-telephone">Téléphone</Label>
+                        <Input
+                          id="teaser-telephone"
+                          type="tel"
+                          autoComplete="tel"
+                          inputMode="tel"
+                          placeholder="06 12 34 56 78"
+                          error={!!errors.telephone}
+                          valid={fieldValid.telephone}
+                          {...register("telephone")}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="teaser-email">Email</Label>
+                        <Input
+                          id="teaser-email"
+                          type="email"
+                          autoComplete="email"
+                          inputMode="email"
+                          error={!!errors.email}
+                          valid={fieldValid.email}
+                          {...register("email")}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2.5 rounded-xl bg-paper p-3">
+                      <Checkbox
+                        id="teaser-consentement"
+                        checked={values.consentement === true}
+                        onCheckedChange={(v) =>
+                          setValue("consentement", v === true, { shouldValidate: true })
+                        }
+                        error={!!errors.consentement}
+                        className="mt-0.5"
+                      />
+                      <label htmlFor="teaser-consentement" className="text-xs leading-relaxed text-ink-soft">
+                        J&apos;accepte d&apos;être recontacté(e) par Soleil Pour
+                        Tous au sujet de ma demande d&apos;étude gratuite.
+                      </label>
+                    </div>
+
+                    <Button type="submit" className="w-full" disabled={isSubmittingLead}>
+                      {isSubmittingLead ? "Un instant…" : "Voir mon résultat complet"}
+                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </Button>
+                  </form>
+
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-center text-xs text-mist">
+                    <span className="inline-flex items-center gap-1">
+                      <Lock className="h-3 w-3" aria-hidden="true" />
+                      Sécurisées
+                    </span>
+                    <span>Gratuit</span>
+                    <span>Sans engagement</span>
+                    <span>Aucune obligation de réaliser les travaux</span>
+                  </div>
+                </motion.div>
+              )}
+
               {phase === "result" && (
                 <motion.div
                   key="result"
                   initial={{ opacity: 0, scale: 0.97 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="rounded-3xl bg-white p-8 text-center"
+                  className="rounded-3xl bg-white p-6 text-center sm:p-8"
                 >
                   <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-leaf-500/10 text-leaf-600">
                     <ShieldCheck className="h-7 w-7" aria-hidden="true" />
@@ -883,19 +936,55 @@ export function ChatQualification() {
                   <h3 className="mt-5 font-display text-2xl font-bold text-ink">
                     Bonne nouvelle{values.prenom ? `, ${values.prenom}` : ""}.
                   </h3>
-                  <p className="mt-3 text-ink-soft">
-                    Votre foyer semble éligible à plusieurs dispositifs de soutien
-                    {estimate.fundingRateLabel
-                      ? `, avec une prise en charge estimée ${estimate.fundingRateLabel.toLowerCase()} selon le barème MaPrimeRénov' 2026`
-                      : ""}
-                    . Un conseiller Soleil Pour Tous vérifiera tout cela avec vous et
-                    vous recontactera pour confirmer votre éligibilité, sur le
-                    créneau que vous avez choisi
-                    {values.disponibiliteRappel
-                      ? ` (${DISPONIBILITE_LABELS[values.disponibiliteRappel].toLowerCase()})`
-                      : ""}
-                    .
+
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                    {values.typeLogement && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-paper px-3 py-1.5 text-xs font-semibold text-ink-soft">
+                        {TYPE_LOGEMENT_LABELS[values.typeLogement]}
+                      </span>
+                    )}
+                    {(values.ville || estimate.region) && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-paper px-3 py-1.5 text-xs font-semibold text-ink-soft">
+                        <MapPin className="h-3 w-3" aria-hidden="true" />
+                        {values.ville || estimate.region}
+                      </span>
+                    )}
+                    {primaryTravauxLabel && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-paper px-3 py-1.5 text-xs font-semibold text-ink-soft">
+                        {values.typeTravaux?.[0] ? TRAVAUX_EMOJI[values.typeTravaux[0]] : ""}
+                        {primaryTravauxLabel}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="mt-6 rounded-2xl bg-paper p-5">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-mist">
+                      Résultat de votre analyse
+                    </p>
+                    <p className="mt-1 font-display text-3xl font-bold text-ink">
+                      {dispositifs.length} aide{dispositifs.length > 1 ? "s" : ""} potentielle
+                      {dispositifs.length > 1 ? "s" : ""}
+                    </p>
+                    {estimate.fundingRateLabel && (
+                      <p className="mt-1 text-sm text-mist">{estimate.fundingRateLabel}</p>
+                    )}
+                  </div>
+
+                  <ul className="mt-5 space-y-2 text-left">
+                    {dispositifs.map((d) => (
+                      <li key={d.label} className="flex items-center gap-2 text-sm font-medium text-ink">
+                        <Check className="h-4 w-4 shrink-0 text-leaf-600" aria-hidden="true" />
+                        {d.label}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <p className="mt-5 text-xs text-mist">
+                    Estimation indicative sous réserve de validation de votre
+                    dossier. Un conseiller Soleil Pour Tous vous recontacte pour
+                    confirmer votre éligibilité.
                   </p>
+
                   {submitError && (
                     <p className="mt-4 text-sm font-medium text-red-500">
                       Votre estimation a bien été calculée, mais l&apos;envoi de votre
@@ -904,17 +993,79 @@ export function ChatQualification() {
                       recontacter directement pour confirmer.
                     </p>
                   )}
-                  <p className="mt-4 text-xs text-mist">
-                    Aucune aide n&apos;est garantie avant validation complète de votre dossier.
-                  </p>
+
+                  <div className="mt-8 border-t border-line pt-6">
+                    {rgeStep === "idle" && (
+                      <>
+                        <p className="font-display text-base font-semibold text-ink">
+                          Passez à l&apos;étape suivante
+                        </p>
+                        <p className="mt-1 text-sm text-mist">
+                          Trouvez un installateur partenaire certifié RGE
+                          {primaryTravauxLabel ? ` pour votre projet de ${primaryTravauxLabel.toLowerCase()}` : ""}
+                          {values.ville ? ` à ${values.ville}` : ""}.
+                        </p>
+                        <Button className="mt-4 w-full" onClick={startRgeSearch}>
+                          Trouver un professionnel <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                      </>
+                    )}
+
+                    {rgeStep === "searching" && (
+                      <div className="flex flex-col items-center gap-3 py-2">
+                        <Loader2 className="h-6 w-6 animate-spin text-sun-600" aria-hidden="true" />
+                        <p className="text-sm text-mist">Recherche dans votre secteur…</p>
+                      </div>
+                    )}
+
+                    {rgeStep === "done" && (
+                      <div>
+                        <p className="text-sm text-ink-soft">
+                          Un conseiller Soleil Pour Tous vous met en relation
+                          avec un installateur partenaire certifié RGE adapté à
+                          votre projet{values.ville ? ` à ${values.ville}` : ""}.
+                        </p>
+                        <ul className="mx-auto mt-3 max-w-xs space-y-1.5 text-left text-sm text-ink-soft">
+                          <li className="flex items-start gap-2">
+                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-leaf-600" aria-hidden="true" />
+                            Travaux correspondant à votre projet
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-leaf-600" aria-hidden="true" />
+                            Qualification RGE vérifiée
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-leaf-600" aria-hidden="true" />
+                            Devis sans engagement
+                          </li>
+                        </ul>
+                        <Button
+                          className="mt-4 w-full"
+                          disabled={rgeConfirmed}
+                          onClick={confirmRgeRequest}
+                        >
+                          {rgeConfirmed ? (
+                            <>
+                              <Check className="h-4 w-4" aria-hidden="true" />
+                              Demande enregistrée
+                            </>
+                          ) : (
+                            "Demander une mise en relation"
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <p className="mt-6 flex items-center justify-center gap-2 text-xs text-mist">
-              <ShieldCheck className="h-4 w-4 text-leaf-600" aria-hidden="true" />
-              Gratuit, rapide, sans engagement — aides accordées selon éligibilité.
-            </p>
+            {phase === "chat" && (
+              <p className="mt-6 flex items-center justify-center gap-2 text-xs text-mist">
+                <ShieldCheck className="h-4 w-4 text-leaf-600" aria-hidden="true" />
+                Gratuit, rapide, sans engagement — aides accordées selon éligibilité.
+              </p>
+            )}
           </div>
         </div>
 

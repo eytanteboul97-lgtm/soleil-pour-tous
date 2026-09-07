@@ -1,7 +1,6 @@
 import type { LeadFormValues } from "@/lib/lead-schema";
 import {
   CIVILITE_LABELS,
-  DISPONIBILITE_LABELS,
   NOMBRE_PERSONNES_LABELS,
   ORIENTATION_LABELS,
   STATUT_LABELS,
@@ -52,7 +51,7 @@ export function buildLeadEmailHtml(lead: LeadFormValues, receivedAt: Date) {
         ${row("Travaux souhaités", lead.typeTravaux.map((t) => TYPE_TRAVAUX_LABELS[t]).join(", "))}
         ${lead.civilite ? row("Civilité", CIVILITE_LABELS[lead.civilite]) : ""}
         ${row("Prénom", lead.prenom)}
-        ${row("Nom", lead.nom)}
+        ${lead.nom ? row("Nom", lead.nom) : ""}
         ${row("Email", lead.email)}
         ${row("Téléphone", lead.telephone)}
         ${row("Adresse", lead.adresse)}
@@ -66,7 +65,6 @@ export function buildLeadEmailHtml(lead: LeadFormValues, receivedAt: Date) {
         ${row("Facture mensuelle", `${lead.factureMensuelle} €`)}
         ${row("Revenu fiscal de référence", `${lead.revenuFiscal} €`)}
         ${band ? row("Profil MaPrimeRénov' estimé", `${band.eligibilityLabel} — ${band.fundingRateLabel.toLowerCase()}`) : ""}
-        ${row("Disponibilité pour être rappelé(e)", DISPONIBILITE_LABELS[lead.disponibiliteRappel])}
         ${row("Consentement RGPD", "Oui, recueilli à la soumission du formulaire")}
       </tbody>
     </table>

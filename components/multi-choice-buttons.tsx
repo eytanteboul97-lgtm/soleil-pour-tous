@@ -9,7 +9,7 @@ export function MultiChoiceButtons<T extends string>({
   values,
   onToggle,
 }: {
-  options: { value: T; label: string }[];
+  options: { value: T; label: string; emoji?: string }[];
   values: T[];
   onToggle: (value: T) => void;
 }) {
@@ -32,6 +32,12 @@ export function MultiChoiceButtons<T extends string>({
                 : "border-line bg-white text-ink-soft hover:border-sun-300 hover:bg-sun-50/50 active:bg-sun-50"
             )}
           >
+            {option.emoji && (
+              <span className="text-xl" aria-hidden="true">
+                {option.emoji}
+              </span>
+            )}
+            <span className="flex-1">{option.label}</span>
             <span
               className={cn(
                 "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border",
@@ -40,7 +46,6 @@ export function MultiChoiceButtons<T extends string>({
             >
               {selected && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
             </span>
-            {option.label}
           </motion.button>
         );
       })}
