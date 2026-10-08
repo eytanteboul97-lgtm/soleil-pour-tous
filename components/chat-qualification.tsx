@@ -655,6 +655,9 @@ export function ChatQualification() {
                             { value: "electrique", label: "Électrique" },
                             { value: "gaz", label: "Gaz" },
                             { value: "fioul", label: "Fioul" },
+                            { value: "charbon", label: "Charbon" },
+                            { value: "bois", label: "Bois" },
+                            { value: "pac", label: "Pompe à chaleur" },
                             { value: "autre", label: "Autre" },
                           ]}
                           value={values.typeChauffage}

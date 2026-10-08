@@ -20,6 +20,9 @@ const HEATING_MULTIPLIER: Record<LeadFormValues["typeChauffage"], number> = {
   electrique: 1.9,
   gaz: 1.05,
   fioul: 1.05,
+  charbon: 1.15,
+  bois: 0.95,
+  pac: 0.6,
   autre: 1.1,
 };
 

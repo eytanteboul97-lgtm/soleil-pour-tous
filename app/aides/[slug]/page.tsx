@@ -109,6 +109,23 @@ export default async function AideFichePage({
           Informations vérifiées le {fiche.derniereVerification}
         </div>
 
+        {(fiche.slug === "pompe-a-chaleur" || fiche.slug === "chauffage") && (
+          <div className="mt-6 flex flex-wrap gap-3 text-xs">
+            <Link
+              href="/pompe-a-chaleur"
+              className="focus-ring-light inline-flex items-center gap-1.5 rounded-full border border-line px-4 py-2 font-semibold text-ink hover:border-sun-300"
+            >
+              Voir le dossier complet pompe à chaleur →
+            </Link>
+            <Link
+              href="/aides-cee-pompe-a-chaleur"
+              className="focus-ring-light inline-flex items-center gap-1.5 rounded-full border border-line px-4 py-2 font-semibold text-ink hover:border-sun-300"
+            >
+              Comprendre les CEE et le Coup de pouce →
+            </Link>
+          </div>
+        )}
+
         <div className="mt-10 space-y-8 text-sm leading-relaxed text-ink-soft">
           <section>
             <h2 className="font-display text-lg font-semibold text-ink">Bénéficiaires</h2>

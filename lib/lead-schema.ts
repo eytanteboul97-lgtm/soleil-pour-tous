@@ -52,7 +52,7 @@ const baseLeadSchema = z.object({
     .trim()
     .min(1, "Champ requis")
     .refine((v) => Number(v) > 0, "Montant invalide"),
-  typeChauffage: z.enum(["electrique", "gaz", "fioul", "autre"], {
+  typeChauffage: z.enum(["electrique", "gaz", "fioul", "charbon", "bois", "pac", "autre"], {
     required_error: "Sélectionnez un type de chauffage",
   }),
 
@@ -137,8 +137,21 @@ export const TYPE_CHAUFFAGE_LABELS: Record<LeadFormValues["typeChauffage"], stri
   electrique: "Électrique",
   gaz: "Gaz",
   fioul: "Fioul",
+  charbon: "Charbon",
+  bois: "Bois",
+  pac: "Pompe à chaleur",
   autre: "Autre",
 };
+
+// Systèmes dont le remplacement par une pompe à chaleur à eau performante
+// peut ouvrir droit à la bonification CEE "Coup de pouce Chauffage" — voir
+// lib/cee-dispositifs.ts. Un chauffage déjà électrique, une PAC existante ou
+// un chauffage bois ne sont volontairement pas inclus.
+export const TYPE_CHAUFFAGE_ELIGIBLE_COUP_DE_POUCE: LeadFormValues["typeChauffage"][] = [
+  "gaz",
+  "fioul",
+  "charbon",
+];
 
 export const ORIENTATION_LABELS: Record<
   NonNullable<LeadFormValues["orientationToit"]>,

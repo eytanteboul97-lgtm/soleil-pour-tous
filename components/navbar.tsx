@@ -16,6 +16,7 @@ const links = [
 ];
 
 const staticLinks = [
+  { href: "/pompe-a-chaleur", label: "Pompe à chaleur" },
   { href: "/professionnels", label: "Professionnels" },
   { href: "/trouver-un-professionnel-rge", label: "Trouver un pro RGE" },
 ];

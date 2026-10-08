@@ -9,7 +9,13 @@ import type { AideSlug } from "@/lib/aides-content";
 
 type Travaux = LeadFormValues["typeTravaux"][number];
 
-const SOLUTIONS: { key: Travaux; aideSlug: AideSlug; icon: typeof Sun; description: string }[] = [
+const SOLUTIONS: {
+  key: Travaux;
+  aideSlug: AideSlug;
+  icon: typeof Sun;
+  description: string;
+  dossierHref?: string;
+}[] = [
   {
     key: "photovoltaique",
     aideSlug: "solaire",
@@ -23,6 +29,7 @@ const SOLUTIONS: { key: Travaux; aideSlug: AideSlug; icon: typeof Sun; descripti
     icon: Droplets,
     description:
       "Remplacez votre chaudière par une pompe à chaleur Air/Eau performante, éligible à de nombreuses aides à la rénovation.",
+    dossierHref: "/pompe-a-chaleur",
   },
   {
     key: "pac-air-air",
@@ -30,6 +37,7 @@ const SOLUTIONS: { key: Travaux; aideSlug: AideSlug; icon: typeof Sun; descripti
     icon: Wind,
     description:
       "Chauffez et rafraîchissez votre logement toute l'année avec une solution réversible économe en énergie.",
+    dossierHref: "/pompe-a-chaleur",
   },
   {
     key: "ballon-thermodynamique",
@@ -115,6 +123,14 @@ export function SolutionsSection() {
               >
                 En savoir plus sur cette aide
               </Link>
+              {solution.dossierHref && (
+                <Link
+                  href={solution.dossierHref}
+                  className="focus-ring-light mt-1 rounded-sm text-center text-xs font-medium text-mist hover:underline"
+                >
+                  Voir le dossier complet pompe à chaleur
+                </Link>
+              )}
             </Reveal>
           ))}
         </div>

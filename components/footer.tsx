@@ -16,6 +16,12 @@ export function Footer() {
           </div>
 
           <nav className="flex flex-col gap-3 text-sm">
+            <Link href="/pompe-a-chaleur" className="focus-ring-dark rounded-sm hover:text-white">
+              Pompe à chaleur
+            </Link>
+            <Link href="/aides-cee-pompe-a-chaleur" className="focus-ring-dark rounded-sm hover:text-white">
+              Aides CEE pompe à chaleur
+            </Link>
             <Link href="/professionnels" className="focus-ring-dark rounded-sm hover:text-white">
               Professionnels
             </Link>
