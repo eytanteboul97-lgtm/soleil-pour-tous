@@ -170,6 +170,23 @@ function buildScreenOrder(wantsPhotovoltaique: boolean): ScreenId[] {
   return order;
 }
 
+// Partagé entre l'initialisation du formulaire et restartSimulation(), pour
+// ne jamais désynchroniser les deux.
+const FORM_DEFAULT_VALUES: Partial<LeadFormValues> = {
+  typeTravaux: [],
+  prenom: "",
+  nom: "",
+  email: "",
+  telephone: "",
+  adresse: "",
+  codePostal: "",
+  ville: "",
+  factureMensuelle: "",
+  surfaceToiture: "",
+  revenuFiscal: "",
+  consentement: false,
+};
+
 export function ChatQualification() {
   const [completed, setCompleted] = useState<ScreenId[]>([]);
   const [currentScreen, setCurrentScreen] = useState<ScreenId | null>(null);
@@ -206,20 +223,7 @@ export function ChatQualification() {
   } = useForm<LeadFormValues>({
     resolver: zodResolver(leadFormSchema),
     mode: "onTouched",
-    defaultValues: {
-      typeTravaux: [],
-      prenom: "",
-      nom: "",
-      email: "",
-      telephone: "",
-      adresse: "",
-      codePostal: "",
-      ville: "",
-      factureMensuelle: "",
-      surfaceToiture: "",
-      revenuFiscal: "",
-      consentement: false,
-    },
+    defaultValues: FORM_DEFAULT_VALUES,
   });
 
   const values = watch();
@@ -363,6 +367,26 @@ export function ChatQualification() {
     setCurrentScreen(null);
     setShowTyping(true);
     saveProgress<LeadFormValues, ScreenId>({ completed: nextCompleted, values: getValues() });
+  }
+
+  // Remet le parcours entièrement à zéro — nécessaire car la progression est
+  // restaurée automatiquement depuis le stockage local (voir l'effet qui
+  // appelle loadProgress ci-dessus) sans qu'aucune action du visiteur ne
+  // l'ait demandé : sans ce bouton, impossible de recommencer une simulation
+  // propre une fois une progression sauvegardée.
+  function restartSimulation() {
+    clearProgress();
+    reset(FORM_DEFAULT_VALUES);
+    setCompleted([]);
+    setCurrentScreen(null);
+    setShowTyping(true);
+    setPhase("chat");
+    setRestoredNotice(false);
+    setRgeStep("idle");
+    setRgeConfirmed(false);
+    setSubmitError(false);
+    submitSucceeded.current = false;
+    simulationStarted.current = false;
   }
 
   function selectAndAdvance<K extends keyof LeadFormValues>(
@@ -651,10 +675,19 @@ export function ChatQualification() {
                         animate={{ opacity: 1, height: "auto", marginBottom: 12 }}
                         exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="flex items-center gap-2 overflow-hidden rounded-xl bg-leaf-500/10 px-3 py-2 text-xs font-medium text-leaf-600"
+                        className="flex items-center justify-between gap-2 overflow-hidden rounded-xl bg-leaf-500/10 px-3 py-2 text-xs font-medium text-leaf-600"
                       >
-                        <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                        Nous avons retrouvé votre progression, reprenons où vous en étiez.
+                        <span className="flex items-center gap-2">
+                          <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          Nous avons retrouvé votre progression, reprenons où vous en étiez.
+                        </span>
+                        <button
+                          type="button"
+                          onClick={restartSimulation}
+                          className="focus-ring-light shrink-0 rounded-sm font-semibold underline hover:no-underline"
+                        >
+                          Recommencer
+                        </button>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -662,7 +695,18 @@ export function ChatQualification() {
                   <div className="mb-4">
                     <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-mist">
                       <span>Votre simulation</span>
-                      <span>{Math.round((completed.length / screenOrder.length) * 100)} %</span>
+                      <span className="flex items-center gap-2">
+                        {completed.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={restartSimulation}
+                            className="focus-ring-light rounded-sm text-mist underline hover:text-ink-soft hover:no-underline"
+                          >
+                            Recommencer
+                          </button>
+                        )}
+                        {Math.round((completed.length / screenOrder.length) * 100)} %
+                      </span>
                     </div>
                     <div className="relative h-1.5 w-full rounded-full bg-line">
                       <motion.div
