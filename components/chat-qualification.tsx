@@ -36,7 +36,19 @@ import {
   trackSimulationStarted,
   trackTeaserViewed,
 } from "@/lib/meta-pixel";
-import { captureAttribution, type Attribution } from "@/lib/attribution";
+import {
+  trackLead as trackGa4Lead,
+  trackProjectUndecided as trackGa4ProjectUndecided,
+  trackRgeInterest as trackGa4RgeInterest,
+  trackSimulationStarted as trackGa4SimulationStarted,
+  trackTeaserViewed as trackGa4TeaserViewed,
+} from "@/lib/ga4";
+import {
+  captureAttribution,
+  generateEventId,
+  getFacebookCookies,
+  type Attribution,
+} from "@/lib/attribution";
 import { cn } from "@/lib/utils";
 import {
   leadFormSchema,
@@ -344,6 +356,7 @@ export function ChatQualification() {
     if (!simulationStarted.current) {
       simulationStarted.current = true;
       trackSimulationStarted();
+      trackGa4SimulationStarted();
     }
     const nextCompleted = [...completed, screen];
     setCompleted(nextCompleted);
@@ -378,13 +391,17 @@ export function ChatQualification() {
   // part de trafic publicitaire sans projet précis en tête.
   function selectAllTravauxAndAdvance(undecided = false) {
     setValue("typeTravaux", [...TYPE_TRAVAUX_VALUES], { shouldValidate: true });
-    if (undecided) trackProjectUndecided();
+    if (undecided) {
+      trackProjectUndecided();
+      trackGa4ProjectUndecided();
+    }
     setTimeout(() => goNext("travaux"), 150);
   }
 
   function handleAnalyzingComplete() {
     setPhase("teaser");
     trackTeaserViewed();
+    trackGa4TeaserViewed();
   }
 
   // Déclenché dès l'écran "contact" (voir goNext), bien avant la fin du
@@ -395,13 +412,26 @@ export function ChatQualification() {
   // de toute façon l'intégralité des coordonnées déjà saisies.
   async function submitEarlyLead() {
     setIsSubmittingEarly(true);
+    // Identifiant partagé entre le pixel navigateur et Meta Conversions API
+    // (voir lib/meta-capi.ts) pour que Meta fusionne les deux en un seul
+    // événement Lead au lieu d'en compter deux.
+    const eventId = generateEventId();
     try {
       const res = await fetch("/api/lead-early", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...getValues(), ...attributionRef.current }),
+        body: JSON.stringify({
+          ...getValues(),
+          ...attributionRef.current,
+          ...getFacebookCookies(),
+          eventId,
+          pageUrl: window.location.href,
+        }),
       });
-      if (res.ok) trackLead();
+      if (res.ok) {
+        trackLead(eventId);
+        trackGa4Lead();
+      }
     } catch {
       // Silencieux — voir commentaire ci-dessus.
     } finally {
@@ -448,6 +478,7 @@ export function ChatQualification() {
   function confirmRgeRequest() {
     setRgeConfirmed(true);
     trackRgeInterest();
+    trackGa4RgeInterest();
   }
 
   const estimate: LiveEstimate = useMemo(() => {

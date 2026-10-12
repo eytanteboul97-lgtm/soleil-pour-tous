@@ -7,6 +7,7 @@ import { SITE_URL } from "@/lib/site-config";
 import "./globals.css";
 
 const META_PIXEL_ID = "4598836663731046";
+const GA4_ID = process.env.NEXT_PUBLIC_GA4_ID;
 
 const display = Space_Grotesk({
   subsets: ["latin"],
@@ -100,6 +101,22 @@ export default function RootLayout({
         />
       </head>
       <body>
+        {/* Google Analytics 4 — n'est injecté que si NEXT_PUBLIC_GA4_ID est
+            défini (voir README) ; le site fonctionne normalement sans. */}
+        {GA4_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${GA4_ID}');`}
+            </Script>
+          </>
+        )}
         <Script id="meta-pixel" strategy="afterInteractive">
           {`!function(f,b,e,v,n,t,s)
           {if(f.fbq)return;n=f.fbq=function(){n.callMethod?

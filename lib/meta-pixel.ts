@@ -17,8 +17,12 @@ export function trackTeaserViewed() {
   window.fbq?.("trackCustom", "TeaserViewed");
 }
 
-export function trackLead() {
-  window.fbq?.("track", "Lead");
+// eventId optionnel : transmis aussi à Meta Conversions API côté serveur
+// (voir submitEarlyLead dans chat-qualification.tsx et lib/meta-capi.ts)
+// pour que Meta fusionne les deux comme un seul événement au lieu de
+// compter deux leads.
+export function trackLead(eventId?: string) {
+  window.fbq?.("track", "Lead", {}, eventId ? { eventID: eventId } : undefined);
 }
 
 export function trackRgeInterest() {

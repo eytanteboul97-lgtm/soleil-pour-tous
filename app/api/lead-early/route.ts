@@ -5,6 +5,7 @@ import { buildEarlyLeadEmailHtml } from "@/lib/lead-email";
 import { extractAttribution } from "@/lib/attribution";
 import { classifyLead, departmentFromPostalCode } from "@/lib/lead-classification";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { sendMetaLeadEvent } from "@/lib/meta-capi";
 
 // Capture un lead partiel dès que le visiteur laisse ses coordonnées, avant
 // la fin du parcours de qualification — voir app/api/lead/route.ts pour la
@@ -23,6 +24,31 @@ export async function POST(request: Request) {
   const lead = parsed.data;
   const receivedAt = new Date();
   const attribution = extractAttribution(body);
+
+  // Meta Conversions API — voir lib/meta-capi.ts. N'envoie rien si
+  // META_CONVERSIONS_API_ACCESS_TOKEN n'est pas configuré. L'eventId doit
+  // correspondre à celui transmis au pixel navigateur (submitEarlyLead) pour
+  // que Meta fusionne les deux comme un seul événement Lead.
+  const payload = (body ?? {}) as Record<string, unknown>;
+  const eventId = typeof payload.eventId === "string" ? payload.eventId : undefined;
+  if (eventId) {
+    // Attendu (pas fire-and-forget) : une fonction serverless peut être
+    // arrêtée dès la réponse envoyée, ce qui couperait un envoi en arrière-plan
+    // non terminé. sendMetaLeadEvent gère déjà ses propres erreurs en interne.
+    await sendMetaLeadEvent({
+      eventId,
+      email: lead.email,
+      phone: lead.telephone,
+      eventSourceUrl: typeof payload.pageUrl === "string" ? payload.pageUrl : undefined,
+      fbp: typeof payload.fbp === "string" ? payload.fbp : undefined,
+      fbc: typeof payload.fbc === "string" ? payload.fbc : undefined,
+      clientIp:
+        request.headers.get("x-nf-client-connection-ip") ||
+        request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+        undefined,
+      clientUserAgent: request.headers.get("user-agent") || undefined,
+    });
+  }
 
   // Persistance en base (facultative tant que Supabase n'est pas configuré)
   // et envoi d'email sont deux canaux indépendants : un souci sur l'un ne

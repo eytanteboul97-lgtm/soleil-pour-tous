@@ -73,3 +73,31 @@ export function extractAttribution(body: unknown): Attribution {
   }
   return result;
 }
+
+// Cookies posés automatiquement par le script fbevents.js du Pixel Meta une
+// fois chargé — utilisés uniquement pour améliorer la correspondance des
+// événements envoyés côté serveur via Meta Conversions API (lib/meta-capi.ts).
+// Absents si le Pixel n'a pas encore eu le temps de se charger ou si un
+// bloqueur de publicité l'empêche — dans ce cas la Conversions API fonctionne
+// quand même, avec une correspondance simplement moins précise.
+export function getFacebookCookies(): { fbp?: string; fbc?: string } {
+  if (typeof document === "undefined") return {};
+  const cookies = document.cookie.split(";").reduce<Record<string, string>>((acc, pair) => {
+    const [key, ...rest] = pair.trim().split("=");
+    if (key) acc[key] = rest.join("=");
+    return acc;
+  }, {});
+  return { fbp: cookies["_fbp"], fbc: cookies["_fbc"] };
+}
+
+// Identifiant partagé entre l'événement envoyé au pixel navigateur et celui
+// envoyé côté serveur, pour que Meta les fusionne en un seul événement au
+// lieu de compter deux leads. crypto.randomUUID() n'existe pas dans tous les
+// anciens navigateurs embarqués (certains navigateurs in-app) — repli sur un
+// identifiant moins robuste mais suffisant pour cet usage.
+export function generateEventId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `evt_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+}
