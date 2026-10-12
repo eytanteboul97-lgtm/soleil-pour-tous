@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { leadFormSchema } from "@/lib/lead-schema";
 import { buildLeadEmailHtml } from "@/lib/lead-email";
+import { extractAttribution } from "@/lib/attribution";
+import { classifyLead, departmentFromPostalCode } from "@/lib/lead-classification";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -16,6 +19,42 @@ export async function POST(request: Request) {
 
   const lead = parsed.data;
   const receivedAt = new Date();
+  const attribution = extractAttribution(body);
+
+  // Persistance en base (facultative tant que Supabase n'est pas configuré)
+  // et envoi d'email sont deux canaux indépendants : un souci sur l'un ne
+  // doit jamais empêcher l'autre, ni bloquer la réponse envoyée au visiteur.
+  const supabase = getSupabaseAdmin();
+  if (supabase) {
+    try {
+      const { error } = await supabase.from("leads").insert({
+        kind: "complet",
+        classification: classifyLead({ kind: "complet", typeTravauxCount: lead.typeTravaux.length }),
+        type_travaux: lead.typeTravaux,
+        prenom: lead.prenom,
+        email: lead.email,
+        telephone: lead.telephone,
+        adresse: lead.adresse,
+        code_postal: lead.codePostal,
+        ville: lead.ville,
+        departement: departmentFromPostalCode(lead.codePostal),
+        statut_occupation: lead.statutOccupation,
+        type_logement: lead.typeLogement,
+        nombre_personnes: lead.nombrePersonnes,
+        type_chauffage: lead.typeChauffage,
+        facture_mensuelle: Number(lead.factureMensuelle) || null,
+        revenu_fiscal: Number(lead.revenuFiscal) || null,
+        surface_toiture: lead.surfaceToiture ? Number(lead.surfaceToiture) || null : null,
+        orientation_toit: lead.orientationToit ?? null,
+        consentement: lead.consentement,
+        ...attribution,
+        raw: body,
+      });
+      if (error) console.error("[lead] échec de l'insertion Supabase:", error);
+    } catch (err) {
+      console.error("[lead] erreur inattendue Supabase:", err);
+    }
+  }
 
   const apiKey = process.env.RESEND_API_KEY;
   const notifyTo = process.env.LEAD_NOTIFICATION_EMAIL;
@@ -52,16 +91,6 @@ export async function POST(request: Request) {
     // de leads silencieusement.
     console.error("[lead] erreur inattendue lors de l'envoi de l'email:", err);
   }
-
-  // TODO(intégration CRM optionnelle) : en plus (ou à la place) de l'email,
-  // brancher ici un envoi vers un CRM/webhook/Airtable/Google Sheets si besoin
-  // plus tard, ex. :
-  //
-  //   await fetch(process.env.CRM_WEBHOOK_URL!, {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify(lead),
-  //   });
 
   return NextResponse.json({ ok: true });
 }

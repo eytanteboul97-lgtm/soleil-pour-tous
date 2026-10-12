@@ -30,6 +30,7 @@ import { getApplicableDispositifs } from "@/lib/dispositifs";
 import { useAddressAutocomplete } from "@/lib/use-address-autocomplete";
 import { clearProgress, loadProgress, saveProgress } from "@/lib/form-persistence";
 import { trackLead, trackRgeInterest, trackSimulationStarted, trackTeaserViewed } from "@/lib/meta-pixel";
+import { captureAttribution, type Attribution } from "@/lib/attribution";
 import { cn } from "@/lib/utils";
 import {
   leadFormSchema,
@@ -163,8 +164,17 @@ export function ChatQualification() {
   const [rgeConfirmed, setRgeConfirmed] = useState(false);
   const submitSucceeded = useRef(false);
   const simulationStarted = useRef(false);
+  const attributionRef = useRef<Attribution>({});
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
   const screenInputRef = useRef<HTMLDivElement>(null);
+
+  // Capturée une seule fois au montage — voir lib/attribution.ts pour la
+  // logique de repli sur sessionStorage si l'URL courante ne porte aucun
+  // paramètre de tracking (ex. visiteur arrivé sur /pompe-a-chaleur depuis la
+  // pub, puis revenu sur l'accueil pour lancer le simulateur).
+  useEffect(() => {
+    attributionRef.current = captureAttribution();
+  }, []);
 
   const {
     register,
@@ -371,7 +381,7 @@ export function ChatQualification() {
       const res = await fetch("/api/lead-early", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(getValues()),
+        body: JSON.stringify({ ...getValues(), ...attributionRef.current }),
       });
       if (res.ok) trackLead();
     } catch {
@@ -393,7 +403,7 @@ export function ChatQualification() {
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(getValues()),
+        body: JSON.stringify({ ...getValues(), ...attributionRef.current }),
       });
       if (!res.ok) {
         setSubmitError(true);

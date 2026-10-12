@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { quickLeadSchema } from "@/lib/lead-schema";
 import { buildEarlyLeadEmailHtml } from "@/lib/lead-email";
+import { extractAttribution } from "@/lib/attribution";
+import { classifyLead, departmentFromPostalCode } from "@/lib/lead-classification";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 // Capture un lead partiel dès que le visiteur laisse ses coordonnées, avant
 // la fin du parcours de qualification — voir app/api/lead/route.ts pour la
@@ -19,6 +22,34 @@ export async function POST(request: Request) {
 
   const lead = parsed.data;
   const receivedAt = new Date();
+  const attribution = extractAttribution(body);
+
+  // Persistance en base (facultative tant que Supabase n'est pas configuré)
+  // et envoi d'email sont deux canaux indépendants : un souci sur l'un ne
+  // doit jamais empêcher l'autre, ni bloquer la réponse envoyée au visiteur.
+  const supabase = getSupabaseAdmin();
+  if (supabase) {
+    try {
+      const { error } = await supabase.from("leads").insert({
+        kind: "early",
+        classification: classifyLead({ kind: "early", typeTravauxCount: lead.typeTravaux.length }),
+        type_travaux: lead.typeTravaux,
+        prenom: lead.prenom,
+        email: lead.email,
+        telephone: lead.telephone,
+        adresse: lead.adresse,
+        code_postal: lead.codePostal,
+        ville: lead.ville,
+        departement: departmentFromPostalCode(lead.codePostal),
+        consentement: lead.consentement,
+        ...attribution,
+        raw: body,
+      });
+      if (error) console.error("[lead-early] échec de l'insertion Supabase:", error);
+    } catch (err) {
+      console.error("[lead-early] erreur inattendue Supabase:", err);
+    }
+  }
 
   const apiKey = process.env.RESEND_API_KEY;
   const notifyTo = process.env.LEAD_NOTIFICATION_EMAIL;
