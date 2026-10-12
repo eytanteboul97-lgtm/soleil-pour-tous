@@ -51,10 +51,11 @@ type Travaux = LeadFormValues["typeTravaux"][number];
 
 type ScreenId =
   | "travaux"
+  | "address"
+  | "contact"
   | "logement"
   | "statut"
   | "chauffage"
-  | "address"
   | "personnes"
   | "facture"
   | "toiture"
@@ -62,24 +63,30 @@ type ScreenId =
 
 const FIELDS_BY_SCREEN: Record<ScreenId, (keyof LeadFormValues)[]> = {
   travaux: ["typeTravaux"],
+  address: ["adresse", "codePostal", "ville"],
+  contact: ["prenom", "telephone", "email", "consentement"],
   logement: ["typeLogement"],
   statut: ["statutOccupation"],
   chauffage: ["typeChauffage"],
-  address: ["adresse", "codePostal", "ville"],
   personnes: ["nombrePersonnes"],
   facture: ["factureMensuelle"],
   toiture: ["surfaceToiture", "orientationToit"],
   revenu: ["revenuFiscal"],
 };
 
-// Questions volontairement ordonnées du plus facile/anodin (projet, logement)
-// au plus engageant (revenu) — le prénom, le téléphone et l'email ne sont
-// demandés qu'une fois à l'écran "teaser" ci-dessous, jamais avant : on ne
-// commence jamais par les coordonnées.
+// Les coordonnées sont demandées tôt dans le parcours (juste après projet +
+// ville), pas à la toute fin : sur du trafic publicitaire froid, un visiteur
+// qui abandonne après avoir laissé prénom/tél/email reste contactable (lead
+// partiel envoyé via /api/lead-early), au lieu de perdre tout le contact s'il
+// décroche plus tard sur une question de logement/chauffage/revenu.
 function assistantMessage(screen: ScreenId, v: Partial<LeadFormValues>): string {
   switch (screen) {
     case "travaux":
       return "Bonjour ! Quel est votre projet ?";
+    case "address":
+      return "Dans quelle commune se trouve le logement ? Cela nous permet de vérifier les aides disponibles dans votre secteur.";
+    case "contact":
+      return "Pour que je puisse vous transmettre vos aides personnalisées, laissez-moi vos coordonnées — ça ne prend que 10 secondes, le reste des questions arrive juste après.";
     case "logement":
       return "Et pour quel type de logement ?";
     case "statut":
@@ -88,8 +95,6 @@ function assistantMessage(screen: ScreenId, v: Partial<LeadFormValues>): string 
       return v.statutOccupation === "locataire"
         ? "Parfait, votre projet se précise. Petite précision au passage : en tant que locataire, l'accord de votre propriétaire sera nécessaire avant les travaux — votre conseiller pourra vous accompagner pour en discuter avec lui. Quel type de chauffage utilisez-vous actuellement ?"
         : "Parfait, votre projet se précise. Quel type de chauffage utilisez-vous actuellement ?";
-    case "address":
-      return "Dans quelle commune se trouve le logement ? Cela nous permet de vérifier les aides disponibles dans votre secteur.";
     case "personnes":
       return "Combien de personnes vivent dans le foyer ?";
     case "facture":
@@ -105,14 +110,16 @@ function userSummary(screen: ScreenId, v: Partial<LeadFormValues>): string {
   switch (screen) {
     case "travaux":
       return (v.typeTravaux ?? []).map((t) => TYPE_TRAVAUX_LABELS[t]).join(", ");
+    case "address":
+      return `${v.codePostal ?? ""} ${v.ville ?? ""}`.trim();
+    case "contact":
+      return v.prenom ? `${v.prenom} — coordonnées enregistrées ✓` : "Coordonnées enregistrées ✓";
     case "logement":
       return v.typeLogement ? TYPE_LOGEMENT_LABELS[v.typeLogement] : "";
     case "statut":
       return v.statutOccupation ? STATUT_LABELS[v.statutOccupation] : "";
     case "chauffage":
       return v.typeChauffage ? TYPE_CHAUFFAGE_LABELS[v.typeChauffage] : "";
-    case "address":
-      return `${v.codePostal ?? ""} ${v.ville ?? ""}`.trim();
     case "personnes":
       return v.nombrePersonnes ? NOMBRE_PERSONNES_LABELS[v.nombrePersonnes] : "";
     case "facture":
@@ -130,10 +137,11 @@ const RGE_SEARCH_DELAY = 1200;
 function buildScreenOrder(wantsPhotovoltaique: boolean): ScreenId[] {
   const order: ScreenId[] = [
     "travaux",
+    "address",
+    "contact",
     "logement",
     "statut",
     "chauffage",
-    "address",
     "personnes",
     "facture",
   ];
@@ -148,6 +156,7 @@ export function ChatQualification() {
   const [showTyping, setShowTyping] = useState(true);
   const [phase, setPhase] = useState<"chat" | "analyzing" | "teaser" | "result">("chat");
   const [isSubmittingLead, setIsSubmittingLead] = useState(false);
+  const [isSubmittingEarly, setIsSubmittingEarly] = useState(false);
   const [submitError, setSubmitError] = useState(false);
   const [restoredNotice, setRestoredNotice] = useState(false);
   const [rgeStep, setRgeStep] = useState<"idle" | "searching" | "done">("idle");
@@ -311,9 +320,10 @@ export function ChatQualification() {
     if (result.ville) setValue("ville", result.ville, { shouldValidate: true });
   });
 
-  async function goNext(screen: ScreenId) {
+  async function goNext(screen: ScreenId, beforeAdvance?: () => Promise<void>) {
     const valid = await trigger(FIELDS_BY_SCREEN[screen]);
     if (!valid) return;
+    if (beforeAdvance) await beforeAdvance();
     if (!simulationStarted.current) {
       simulationStarted.current = true;
       trackSimulationStarted();
@@ -349,10 +359,34 @@ export function ChatQualification() {
     trackTeaserViewed();
   }
 
-  async function submitLead(e: React.FormEvent) {
-    e.preventDefault();
-    const valid = await trigger(["prenom", "email", "telephone", "consentement"]);
-    if (!valid) return;
+  // Déclenché dès l'écran "contact" (voir goNext), bien avant la fin du
+  // parcours : envoie un lead partiel (projet + ville + coordonnées) à
+  // /api/lead-early et déclenche l'événement Meta "Lead" dès ce moment-là.
+  // Résilience volontaire : un souci réseau ici ne bloque jamais la suite du
+  // parcours — si le visiteur va au bout, submitFinalLead ci-dessous renvoie
+  // de toute façon l'intégralité des coordonnées déjà saisies.
+  async function submitEarlyLead() {
+    setIsSubmittingEarly(true);
+    try {
+      const res = await fetch("/api/lead-early", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(getValues()),
+      });
+      if (res.ok) trackLead();
+    } catch {
+      // Silencieux — voir commentaire ci-dessus.
+    } finally {
+      setIsSubmittingEarly(false);
+    }
+  }
+
+  // Soumission finale, déclenchée par le bouton de l'écran "teaser" une fois
+  // le parcours complet terminé — envoie le profil enrichi (chauffage, foyer,
+  // revenu...) en plus des coordonnées déjà transmises à l'écran "contact".
+  // Ne redéclenche pas trackLead() : l'événement a déjà été envoyé plus tôt,
+  // pour ne pas fausser le coût par résultat calculé par Meta.
+  async function submitFinalLead() {
     setIsSubmittingLead(true);
     setSubmitError(false);
     try {
@@ -366,7 +400,6 @@ export function ChatQualification() {
       } else {
         submitSucceeded.current = true;
         clearProgress();
-        trackLead();
       }
     } catch {
       setSubmitError(true);
@@ -705,6 +738,71 @@ export function ChatQualification() {
                         </div>
                       )}
 
+                      {currentScreen === "contact" && (
+                        <div className="space-y-3">
+                          <div>
+                            <Label htmlFor="contact-prenom">Prénom</Label>
+                            <Input
+                              id="contact-prenom"
+                              autoComplete="given-name"
+                              error={!!errors.prenom}
+                              valid={fieldValid.prenom}
+                              {...register("prenom")}
+                            />
+                          </div>
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div>
+                              <Label htmlFor="contact-telephone">Téléphone</Label>
+                              <Input
+                                id="contact-telephone"
+                                type="tel"
+                                autoComplete="tel"
+                                inputMode="tel"
+                                placeholder="06 12 34 56 78"
+                                error={!!errors.telephone}
+                                valid={fieldValid.telephone}
+                                {...register("telephone")}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="contact-email">Email</Label>
+                              <Input
+                                id="contact-email"
+                                type="email"
+                                autoComplete="email"
+                                inputMode="email"
+                                error={!!errors.email}
+                                valid={fieldValid.email}
+                                {...register("email")}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-2.5 rounded-xl bg-paper p-3">
+                            <Checkbox
+                              id="contact-consentement"
+                              checked={values.consentement === true}
+                              onCheckedChange={(v) =>
+                                setValue("consentement", v === true, { shouldValidate: true })
+                              }
+                              error={!!errors.consentement}
+                              className="mt-0.5"
+                            />
+                            <label htmlFor="contact-consentement" className="text-xs leading-relaxed text-ink-soft">
+                              J&apos;accepte d&apos;être recontacté(e) par Soleil
+                              Pour Tous au sujet de ma demande d&apos;étude gratuite.
+                            </label>
+                          </div>
+                          <Button
+                            className="mt-1 w-full"
+                            disabled={isSubmittingEarly}
+                            onClick={() => goNext("contact", submitEarlyLead)}
+                          >
+                            {isSubmittingEarly ? "Un instant…" : "Continuer"}
+                            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                          </Button>
+                        </div>
+                      )}
+
                       {currentScreen === "personnes" && (
                         <ChoiceButtons
                           options={[
@@ -840,66 +938,14 @@ export function ChatQualification() {
                     </p>
                   </div>
 
-                  <form onSubmit={submitLead} className="mt-6 space-y-3">
-                    <div>
-                      <Label htmlFor="teaser-prenom">Prénom</Label>
-                      <Input
-                        id="teaser-prenom"
-                        autoComplete="given-name"
-                        error={!!errors.prenom}
-                        valid={fieldValid.prenom}
-                        {...register("prenom")}
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <div>
-                        <Label htmlFor="teaser-telephone">Téléphone</Label>
-                        <Input
-                          id="teaser-telephone"
-                          type="tel"
-                          autoComplete="tel"
-                          inputMode="tel"
-                          placeholder="06 12 34 56 78"
-                          error={!!errors.telephone}
-                          valid={fieldValid.telephone}
-                          {...register("telephone")}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="teaser-email">Email</Label>
-                        <Input
-                          id="teaser-email"
-                          type="email"
-                          autoComplete="email"
-                          inputMode="email"
-                          error={!!errors.email}
-                          valid={fieldValid.email}
-                          {...register("email")}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-2.5 rounded-xl bg-paper p-3">
-                      <Checkbox
-                        id="teaser-consentement"
-                        checked={values.consentement === true}
-                        onCheckedChange={(v) =>
-                          setValue("consentement", v === true, { shouldValidate: true })
-                        }
-                        error={!!errors.consentement}
-                        className="mt-0.5"
-                      />
-                      <label htmlFor="teaser-consentement" className="text-xs leading-relaxed text-ink-soft">
-                        J&apos;accepte d&apos;être recontacté(e) par Soleil Pour
-                        Tous au sujet de ma demande d&apos;étude gratuite.
-                      </label>
-                    </div>
-
-                    <Button type="submit" className="w-full" disabled={isSubmittingLead}>
-                      {isSubmittingLead ? "Un instant…" : "Voir mon résultat complet"}
-                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                    </Button>
-                  </form>
+                  <Button
+                    className="mt-6 w-full"
+                    disabled={isSubmittingLead}
+                    onClick={submitFinalLead}
+                  >
+                    {isSubmittingLead ? "Un instant…" : "Voir mon résultat complet"}
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Button>
 
                   <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-center text-xs text-mist">
                     <span className="inline-flex items-center gap-1">

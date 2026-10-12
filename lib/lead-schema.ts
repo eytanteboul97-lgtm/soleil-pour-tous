@@ -101,6 +101,24 @@ export const leadFormSchema = baseLeadSchema.superRefine((data, ctx) => {
 
 export type LeadFormValues = z.infer<typeof leadFormSchema>;
 
+// Schéma "lead rapide" — capturé dès l'écran contact, avant le reste de la
+// qualification (chauffage, revenu, etc.). Sous-ensemble volontairement
+// restreint de baseLeadSchema : seuls les champs déjà renseignés à ce stade
+// du parcours (projet, ville, coordonnées) sont exigés, pour ne jamais
+// perdre un contact qui abandonne juste après avoir laissé ses informations.
+export const quickLeadSchema = baseLeadSchema.pick({
+  typeTravaux: true,
+  prenom: true,
+  email: true,
+  telephone: true,
+  adresse: true,
+  codePostal: true,
+  ville: true,
+  consentement: true,
+});
+
+export type QuickLeadValues = z.infer<typeof quickLeadSchema>;
+
 export const TYPE_TRAVAUX_LABELS: Record<(typeof TYPE_TRAVAUX_VALUES)[number], string> = {
   photovoltaique: "Panneaux photovoltaïques",
   "pac-air-eau": "Pompe à chaleur Air / Eau",
