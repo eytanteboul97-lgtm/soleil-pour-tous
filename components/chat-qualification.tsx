@@ -29,7 +29,13 @@ import { estimateReferenceMonthlyBill, estimateSavingsRate } from "@/lib/referen
 import { getApplicableDispositifs } from "@/lib/dispositifs";
 import { useAddressAutocomplete } from "@/lib/use-address-autocomplete";
 import { clearProgress, loadProgress, saveProgress } from "@/lib/form-persistence";
-import { trackLead, trackRgeInterest, trackSimulationStarted, trackTeaserViewed } from "@/lib/meta-pixel";
+import {
+  trackLead,
+  trackProjectUndecided,
+  trackRgeInterest,
+  trackSimulationStarted,
+  trackTeaserViewed,
+} from "@/lib/meta-pixel";
 import { captureAttribution, type Attribution } from "@/lib/attribution";
 import { cn } from "@/lib/utils";
 import {
@@ -43,6 +49,7 @@ import {
   STATUT_LABELS,
   TYPE_CHAUFFAGE_LABELS,
   TYPE_LOGEMENT_LABELS,
+  TYPE_TRAVAUX_BENEFIT_TAGLINE,
   TYPE_TRAVAUX_EMOJI,
   TYPE_TRAVAUX_LABELS,
   TYPE_TRAVAUX_VALUES,
@@ -364,6 +371,17 @@ export function ChatQualification() {
     setValue("typeTravaux", next, { shouldValidate: true });
   }
 
+  // Raccourci pour "Découvrir toutes les aides possibles" et "Je ne sais pas
+  // encore" : sélectionne toutes les catégories plutôt que d'introduire une
+  // valeur typeTravaux fictive qui casserait le moteur de dispositifs et le
+  // typage. Le second cas est tracé séparément côté pixel pour mesurer la
+  // part de trafic publicitaire sans projet précis en tête.
+  function selectAllTravauxAndAdvance(undecided = false) {
+    setValue("typeTravaux", [...TYPE_TRAVAUX_VALUES], { shouldValidate: true });
+    if (undecided) trackProjectUndecided();
+    setTimeout(() => goNext("travaux"), 150);
+  }
+
   function handleAnalyzingComplete() {
     setPhase("teaser");
     trackTeaserViewed();
@@ -542,14 +560,21 @@ export function ChatQualification() {
             Étude d&apos;éligibilité gratuite
           </span>
 
+          {/* Accroche actuelle = angle B du brief marketing. Autres angles à
+              tester en changeant uniquement ce <h1>/<p> :
+              A. "Découvrez les aides disponibles pour votre logement"
+              C. "Vérifiez gratuitement les aides adaptées à votre situation"
+              D. "Rénovation, chauffage, isolation : quelles aides pour vous ?" */}
           <h1 className="font-display text-3xl font-bold leading-[1.1] text-white sm:text-4xl lg:text-[2.75rem]">
-            À quelles <span className="text-gradient-sun">aides avez-vous droit</span> pour
-            votre projet ?
+            Et si vous passiez à côté{" "}
+            <span className="text-gradient-sun">d&apos;aides financières</span> pour votre
+            logement ?
           </h1>
 
           <p className="mt-4 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
-            Découvrez en quelques minutes les aides, primes et dispositifs
-            susceptibles de correspondre à votre situation.
+            Découvrez en 1 minute les aides qui pourraient correspondre à
+            votre situation — rénovation énergétique, solaire, adaptation du
+            logement. Vérification gratuite et sans engagement.
           </p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -654,11 +679,30 @@ export function ChatQualification() {
                             options={TYPE_TRAVAUX_VALUES.map((v) => ({
                               value: v,
                               label: TYPE_TRAVAUX_LABELS[v],
+                              sublabel: TYPE_TRAVAUX_BENEFIT_TAGLINE[v],
                               emoji: TYPE_TRAVAUX_EMOJI[v],
                             }))}
                             values={values.typeTravaux ?? []}
                             onToggle={toggleTravaux}
                           />
+
+                          <div className="grid grid-cols-1 gap-2 border-t border-line pt-3 sm:grid-cols-2">
+                            <button
+                              type="button"
+                              onClick={() => selectAllTravauxAndAdvance()}
+                              className="focus-ring-light rounded-xl border border-dashed border-line px-3 py-2.5 text-left text-xs font-semibold text-ink-soft transition-colors hover:border-sun-300 hover:bg-sun-50/50"
+                            >
+                              🔍 Découvrir toutes les aides possibles
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => selectAllTravauxAndAdvance(true)}
+                              className="focus-ring-light rounded-xl border border-dashed border-line px-3 py-2.5 text-left text-xs font-semibold text-ink-soft transition-colors hover:border-sun-300 hover:bg-sun-50/50"
+                            >
+                              🤔 Je ne sais pas encore
+                            </button>
+                          </div>
+
                           <Button
                             className="mt-1 w-full"
                             disabled={(values.typeTravaux ?? []).length === 0}
@@ -684,8 +728,10 @@ export function ChatQualification() {
                       {currentScreen === "statut" && (
                         <ChoiceButtons
                           options={[
-                            { value: "proprietaire", label: "Propriétaire" },
+                            { value: "proprietaire", label: "Propriétaire occupant" },
+                            { value: "proprietaire-bailleur", label: "Propriétaire bailleur" },
                             { value: "locataire", label: "Locataire" },
+                            { value: "autre", label: "Autre situation" },
                           ]}
                           value={values.statutOccupation}
                           onSelect={(v) => selectAndAdvance("statut", "statutOccupation", v)}

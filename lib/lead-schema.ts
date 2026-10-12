@@ -15,6 +15,7 @@ export const TYPE_TRAVAUX_VALUES = [
   "ballon-thermodynamique",
   "isolation",
   "renovation-globale",
+  "adaptation",
 ] as const;
 
 const baseLeadSchema = z.object({
@@ -38,7 +39,7 @@ const baseLeadSchema = z.object({
   codePostal: z.string().trim().regex(POSTAL_CODE_REGEX, "Code postal invalide (5 chiffres)"),
   ville: z.string().trim().min(2, "Ville trop courte"),
 
-  statutOccupation: z.enum(["proprietaire", "locataire"], {
+  statutOccupation: z.enum(["proprietaire", "proprietaire-bailleur", "locataire", "autre"], {
     required_error: "Sélectionnez votre statut",
   }),
   typeLogement: z.enum(["maison", "appartement", "autre"], {
@@ -126,6 +127,21 @@ export const TYPE_TRAVAUX_LABELS: Record<(typeof TYPE_TRAVAUX_VALUES)[number], s
   "ballon-thermodynamique": "Ballon thermodynamique",
   isolation: "Isolation thermique",
   "renovation-globale": "Rénovation globale",
+  adaptation: "Adaptation du logement",
+};
+
+// Reformulation orientée bénéfice, affichée en sous-texte sous le libellé
+// technique dans le sélecteur de projet du parcours — le libellé technique
+// (TYPE_TRAVAUX_LABELS) reste inchangé partout ailleurs (email, dashboard,
+// fiches), où la précision prime sur l'accroche marketing.
+export const TYPE_TRAVAUX_BENEFIT_TAGLINE: Record<(typeof TYPE_TRAVAUX_VALUES)[number], string> = {
+  photovoltaique: "Produire ma propre électricité",
+  "pac-air-eau": "Réduire durablement ma facture de chauffage",
+  "pac-air-air": "Améliorer mon chauffage et me rafraîchir l'été",
+  "ballon-thermodynamique": "Réduire ma facture d'eau chaude",
+  isolation: "Isoler mon logement",
+  "renovation-globale": "Rénover mon logement en profondeur",
+  adaptation: "Adapter mon logement au vieillissement ou au handicap",
 };
 
 // Un émoji par type de travaux, réutilisé partout où le projet du visiteur
@@ -138,6 +154,7 @@ export const TYPE_TRAVAUX_EMOJI: Record<(typeof TYPE_TRAVAUX_VALUES)[number], st
   "ballon-thermodynamique": "💧",
   isolation: "🏠",
   "renovation-globale": "⚡",
+  adaptation: "♿",
 };
 
 export const CIVILITE_LABELS: Record<NonNullable<LeadFormValues["civilite"]>, string> = {
@@ -188,8 +205,10 @@ export const TYPE_LOGEMENT_LABELS: Record<LeadFormValues["typeLogement"], string
 };
 
 export const STATUT_LABELS: Record<LeadFormValues["statutOccupation"], string> = {
-  proprietaire: "Propriétaire",
+  proprietaire: "Propriétaire occupant",
+  "proprietaire-bailleur": "Propriétaire bailleur",
   locataire: "Locataire",
+  autre: "Autre situation",
 };
 
 export const DISPONIBILITE_LABELS: Record<LeadFormValues["disponibiliteRappel"], string> = {

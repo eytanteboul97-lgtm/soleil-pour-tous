@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ChevronDown, Cylinder, Droplets, Hammer, Layers, Sun, Wind } from "lucide-react";
+import { Accessibility, ArrowRight, ChevronDown, Cylinder, Droplets, Hammer, Layers, Sun, Wind } from "lucide-react";
 import { Reveal } from "@/components/reveal";
 import { Button } from "@/components/ui/button";
 import { TYPE_TRAVAUX_LABELS, type LeadFormValues } from "@/lib/lead-schema";
@@ -59,6 +59,13 @@ const SOLUTIONS: {
     icon: Hammer,
     description:
       "Un accompagnement complet pour combiner plusieurs travaux et maximiser vos aides dans le cadre de MaPrimeRénov'.",
+  },
+  {
+    key: "adaptation",
+    aideSlug: "adaptation",
+    icon: Accessibility,
+    description:
+      "Douche de plain-pied, monte-escalier, accès facilités : adaptez votre logement au vieillissement ou au handicap avec MaPrimeAdapt'.",
   },
 ];
 

@@ -6,7 +6,8 @@ export type AideSlug =
   | "solaire"
   | "chauffage"
   | "renovation-energetique"
-  | "chauffe-eau";
+  | "chauffe-eau"
+  | "adaptation";
 
 export type AideFiche = {
   slug: AideSlug;
@@ -189,6 +190,32 @@ export const AIDES_FICHES: Record<AideSlug, AideFiche> = {
     dateValidite:
       "Dispositif actif, conditions et montants révisés régulièrement par arrêté — à reconfirmer lors de l'étude personnalisée.",
     sourceOfficielle: [OFFICIAL_SOURCES.franceRenov, OFFICIAL_SOURCES.ademe],
+    derniereVerification: LAST_VERIFIED,
+  },
+  adaptation: {
+    slug: "adaptation",
+    travauxKey: "adaptation",
+    title: "MaPrimeAdapt' — aide à l'adaptation du logement",
+    metaDescription:
+      "Douche de plain-pied, monte-escalier, élargissement des accès : découvrez MaPrimeAdapt', l'aide de l'ANAH pour adapter votre logement à la perte d'autonomie, et vérifiez votre éligibilité gratuitement.",
+    heroTagline:
+      "MaPrimeAdapt' est un dispositif distinct de MaPrimeRénov' : il finance des travaux d'adaptation du logement au vieillissement ou au handicap, pas des travaux d'économie d'énergie.",
+    beneficiaires:
+      "Propriétaires occupants (et, sous conditions, propriétaires bailleurs) âgés de 70 ans ou plus, ou de 60 à 69 ans en perte d'autonomie, ou en situation de handicap quel que soit l'âge, sous conditions de ressources.",
+    travauxConcernes:
+      "Travaux favorisant le maintien à domicile : douche de plain-pied, monte-escalier ou élévateur, élargissement des portes, barres d'appui, adaptation de la cuisine ou des sanitaires.",
+    conditionsPrincipales: [
+      "Logement achevé depuis plus de 15 ans dans la plupart des cas (date exacte à vérifier selon votre situation).",
+      "Projet accompagné par un opérateur habilité, qui réalise un diagnostic autonomie avant les travaux.",
+      "Conditions d'âge, de perte d'autonomie ou de handicap, et de ressources, vérifiées au dossier.",
+    ],
+    montant:
+      "Taux de prise en charge variable selon le niveau de ressources du foyer, dans la limite d'un plafond de travaux éligibles. Le montant précis applicable à votre situation s'affiche pendant la simulation puis se confirme lors de l'étude personnalisée.",
+    cumul:
+      "Le cumul avec d'autres aides (locales, caisses de retraite, MDPH) dépend de votre situation — étudié au cas par cas lors de l'accompagnement.",
+    dateValidite:
+      "Dispositif actif depuis 2024, conditions et montants révisés régulièrement — à reconfirmer lors de l'étude personnalisée.",
+    sourceOfficielle: [OFFICIAL_SOURCES.anah, OFFICIAL_SOURCES.servicePublic],
     derniereVerification: LAST_VERIFIED,
   },
 };

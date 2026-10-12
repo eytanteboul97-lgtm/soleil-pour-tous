@@ -8,6 +8,18 @@ export type Dispositif = { label: string; aideSlug?: string };
 // de travaux sélectionnés — même logique que components/aides-table.tsx et
 // lib/aides-content.ts, pour ne jamais afficher un nombre "inventé" : le
 // compte de dispositifs montré au visiteur provient toujours de ce moteur.
+// Travaux relevant d'une logique d'économie d'énergie — exclut volontairement
+// "adaptation" (MaPrimeAdapt'), qui répond à une logique d'accessibilité et
+// de maintien à domicile, pas d'économie d'énergie : lui attribuer des CEE
+// ou MaPrimeRénov' serait trompeur.
+const ENERGY_TRAVAUX: Travaux[] = [
+  "photovoltaique",
+  "pac-air-eau",
+  "pac-air-air",
+  "ballon-thermodynamique",
+  "isolation",
+  "renovation-globale",
+];
 const MAPRIMERENOV_TRAVAUX: Travaux[] = [
   "pac-air-eau",
   "pac-air-air",
@@ -20,7 +32,7 @@ const ECO_PTZ_TRAVAUX: Travaux[] = ["isolation", "renovation-globale"];
 export function getApplicableDispositifs(typeTravaux: Travaux[]): Dispositif[] {
   const dispositifs: Dispositif[] = [];
 
-  if (typeTravaux.length > 0) {
+  if (typeTravaux.some((t) => ENERGY_TRAVAUX.includes(t))) {
     dispositifs.push({ label: "Certificats d'Économies d'Énergie (CEE)" });
   }
   if (typeTravaux.some((t) => MAPRIMERENOV_TRAVAUX.includes(t))) {
@@ -32,6 +44,9 @@ export function getApplicableDispositifs(typeTravaux: Travaux[]): Dispositif[] {
   }
   if (typeTravaux.some((t) => ECO_PTZ_TRAVAUX.includes(t))) {
     dispositifs.push({ label: "Éco-prêt à taux zéro" });
+  }
+  if (typeTravaux.includes("adaptation")) {
+    dispositifs.push({ label: "MaPrimeAdapt'", aideSlug: "adaptation" });
   }
 
   return dispositifs;

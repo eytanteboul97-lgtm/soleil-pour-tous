@@ -24,3 +24,11 @@ export function trackLead() {
 export function trackRgeInterest() {
   window.fbq?.("trackCustom", "RGEInterest");
 }
+
+// Permet de repérer, côté acquisition, la part de visiteurs qui n'ont pas
+// encore de projet précis en tête — utile pour juger si un angle publicitaire
+// trop générique ("découvrez vos aides") attire un trafic moins qualifié
+// qu'un angle ciblé sur un projet (PAC, isolation...).
+export function trackProjectUndecided() {
+  window.fbq?.("trackCustom", "ProjectUndecided");
+}

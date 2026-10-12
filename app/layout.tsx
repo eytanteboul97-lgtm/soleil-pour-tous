@@ -23,9 +23,9 @@ const body = Inter({
 });
 
 const siteUrl = SITE_URL;
-const title = "Soleil Pour Tous — Panneaux solaires et aides à la rénovation énergétique";
+const title = "Soleil Pour Tous — Découvrez les aides pour votre logement";
 const description =
-  "Testez gratuitement votre éligibilité aux aides pour vos travaux de rénovation énergétique — panneaux solaires, pompe à chaleur, isolation. Étude gratuite, sans engagement.";
+  "Rénovation énergétique, chauffage, isolation, solaire, adaptation du logement : découvrez en 1 minute les aides auxquelles vous pourriez avoir droit. Vérification gratuite, sans engagement.";
 
 export const viewport = {
   themeColor: "#060B17",
@@ -39,15 +39,17 @@ export const metadata: Metadata = {
   },
   description,
   keywords: [
+    "aides rénovation énergétique",
+    "MaPrimeRénov",
+    "MaPrimeAdapt",
+    "pompe à chaleur",
+    "isolation thermique",
     "panneaux solaires",
     "photovoltaïque",
     "aides solaire",
-    "autoconsommation",
-    "énergie renouvelable",
-    "économies électricité",
-    "pompe à chaleur",
-    "isolation thermique",
-    "MaPrimeRénov",
+    "adaptation logement",
+    "CEE",
+    "certificats d'économies d'énergie",
   ],
   authors: [{ name: "Soleil Pour Tous" }],
   alternates: {
