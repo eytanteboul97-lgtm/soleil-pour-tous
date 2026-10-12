@@ -1,9 +1,10 @@
 # Soleil Pour Tous
 
-Landing page de prospection pour l'installation de panneaux photovoltaïques
-en France. Site marketing haute conversion : simulateur d'éligibilité,
-formulaire de lead multi-étapes, tableau des aides disponibles, simulateur
-d'économies, FAQ.
+Plateforme de détection des aides à la rénovation énergétique et
+d'adaptation du logement en France (CEE, MaPrimeRénov', MaPrimeAdapt',
+solaire...) : simulateur de qualification multi-étapes, capture de leads
+anticipée, tableau de bord admin, tracking Meta Pixel/Conversions API et
+Google Analytics 4.
 
 Ce projet vit dans son propre repo, entièrement indépendant du site sefa.is
 (identité de marque, palette et composants distincts).
@@ -50,12 +51,51 @@ affiche l'écran de succès) mais aucun email n'est envoyé — un avertissement
 est simplement écrit dans les logs serveur pour ne pas perdre le signal
 silencieusement.
 
-### Brancher un CRM / webhook / Airtable / Google Sheets en plus
+## Persistance des leads + tableau de bord (Supabase)
 
-`app/api/lead/route.ts` contient un second point d'extension, marqué
-`TODO(intégration CRM optionnelle)`, pour envoyer le lead vers un autre
-système en plus de l'email (HubSpot, Pipedrive, Airtable, Google Sheets via
-Apps Script, un webhook Zapier/Make...).
+En plus de l'email, chaque lead peut être enregistré dans une base Supabase
+et consulté dans un tableau de bord `/admin` (visiteurs, taux de
+complétion, répartition par catégorie/département/qualification, leads
+récents).
+
+Pour l'activer :
+
+1. Créer un compte gratuit sur [supabase.com](https://supabase.com) et un
+   nouveau projet (gratuit jusqu'à 500 Mo, largement suffisant pour
+   démarrer).
+2. Dans **SQL Editor**, coller le contenu de `supabase/schema.sql` et
+   l'exécuter (crée la table `leads` avec RLS activé).
+3. Dans **Project Settings → API**, récupérer :
+   - `SUPABASE_URL` — l'URL du projet.
+   - `SUPABASE_SERVICE_ROLE_KEY` — la clé **service_role** (jamais la clé
+     "anon" : service_role est nécessaire côté serveur et ne doit **jamais**
+     être exposée au navigateur).
+4. Définir un mot de passe pour le dashboard : `ADMIN_PASSWORD` (choisissez
+   une valeur longue et unique, ce n'est pas votre mot de passe personnel).
+5. Ajouter ces 3 variables sur Netlify (**Site configuration → Environment
+   variables**), puis redéployer.
+
+Le dashboard est accessible sur `/admin` (redirige vers `/admin/login` tant
+qu'on n'est pas connecté). Sans ces variables, le site fonctionne
+normalement — les leads continuent de partir par email, simplement sans
+tableau de bord.
+
+## Tracking (Meta Pixel, Conversions API, Google Analytics 4)
+
+Le Meta Pixel est déjà actif (ID en dur dans `app/layout.tsx`). Deux
+compléments optionnels :
+
+- **Meta Conversions API** — renvoie l'événement "Lead" depuis le serveur en
+  plus du pixel navigateur (plus fiable face aux bloqueurs de pub et à
+  Safari ITP). Dans **Meta Events Manager → votre pixel → Paramètres →
+  Conversions API**, générer un jeton d'accès, puis définir
+  `META_CONVERSIONS_API_ACCESS_TOKEN` sur Netlify.
+- **Google Analytics 4** — définir `NEXT_PUBLIC_GA4_ID` (format
+  `G-XXXXXXXXXX`, trouvable dans **Admin → Flux de données** de votre
+  propriété GA4) sur Netlify.
+
+Sans ces variables, le site fonctionne normalement avec le seul Pixel Meta
+navigateur.
 
 ## Déploiement (Netlify)
 
